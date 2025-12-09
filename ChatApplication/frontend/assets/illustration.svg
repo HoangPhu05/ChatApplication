@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="illustration">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1">
+      <stop offset="0" stop-color="#f3efe3"/>
+      <stop offset="1" stop-color="#e9e1c9"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" rx="18" fill="url(#bg)" />
+  <!-- simplified people shapes -->
+  <g transform="translate(80,60)" fill="#2f3c4a">
+    <g>
+      <circle cx="120" cy="120" r="44" fill="#28333f" opacity="0.95"/>
+      <rect x="80" y="190" width="80" height="28" rx="10" fill="#2f3c4a" opacity="0.95"/>
+    </g>
+    <g transform="translate(220,0)">
+      <circle cx="120" cy="120" r="44" fill="#2f3c4a" opacity="0.95"/>
+      <rect x="80" y="190" width="120" height="32" rx="10" fill="#28333f" opacity="0.9"/>
+    </g>
+    <g transform="translate(420,10)">
+      <circle cx="120" cy="120" r="44" fill="#2f3c4a" opacity="0.95"/>
+      <rect x="80" y="190" width="80" height="28" rx="10" fill="#2f3c4a" opacity="0.95"/>
+    </g>
+  </g>
+  <!-- message bubble -->
+  <g transform="translate(220,40)">
+    <rect x="20" y="10" width="380" height="180" rx="12" fill="#fff" opacity="0.92"/>
+    <rect x="50" y="40" width="320" height="18" rx="9" fill="#28333f" opacity="0.9"/>
+    <rect x="50" y="70" width="220" height="14" rx="7" fill="#28333f" opacity="0.6"/>
+  </g>
+</svg>

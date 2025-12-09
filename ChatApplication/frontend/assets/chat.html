@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ChatApp — Messages</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/chat.css" />
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+<span class="material-icons">light_mode</span>
+</button>
+
+<div class="chat-container">
+	<!-- Sidebar -->
+	<aside class="chat-sidebar">
+		<div class="sidebar-header">
+			<div class="user-profile">
+				<div class="avatar online">HP</div>
+				<div class="user-info">
+					<h3>Hoang Phu</h3>
+					<span class="status">Online</span>
+				</div>
+			</div>
+			<button class="btn-icon" title="Settings">
+				<span class="material-icons">edit</span>
+			</button>
+		</div>
+
+		<div class="search-container">
+			<div class="search-box">
+				<span class="material-icons">search</span>
+				<input type="text" placeholder="Search or start new chat" />
+			</div>
+			<button class="btn-icon" title="Add friend">
+				<span class="material-icons">person_add</span>
+			</button>
+			<button class="btn-icon" title="Create group">
+				<span class="material-icons">group_add</span>
+			</button>
+		</div>
+
+		<div class="chat-list">
+			<div class="chat-item">
+				<div class="avatar online">
+					<span class="material-icons">cloud</span>
+				</div>
+				<div class="chat-info">
+					<div class="chat-header">
+						<h4>Cloud của tôi</h4>
+						<span class="time">Now</span>
+					</div>
+					<p class="last-message">Your personal cloud storage</p>
+				</div>
+			</div>
+		</div>
+	</aside>
+
+	<!-- Main Chat Area -->
+	<main class="chat-main">
+		<div class="empty-state">
+			<div class="empty-icon">
+				<span class="material-icons">chat_bubble_outline</span>
+			</div>
+			<h2>Your Messages</h2>
+			<p>Select a conversation from the list on the left to view it here.</p>
+		</div>
+
+		<!-- Cloud Storage View (Hidden by default) -->
+		<div class="chat-view" id="cloud-chat" style="display: none;">
+			<!-- Cloud Files Timeline -->
+			<div class="cloud-timeline">
+				<div class="cloud-header">
+					<div class="cloud-title">
+						<span class="material-icons">cloud</span>
+						<h2>Cloud của tôi</h2>
+					</div>
+					<div class="cloud-actions">
+						<button class="btn-icon" title="Search">
+							<span class="material-icons">search</span>
+						</button>
+						<button class="btn-icon" id="toggle-info-panel" title="Info">
+							<span class="material-icons">info</span>
+						</button>
+					</div>
+				</div>
+
+				<p class="cloud-subtitle">Lưu và đồng bộ dữ liệu giữa các thiết bị</p>
+
+				<!-- Files Timeline -->
+				<div class="files-timeline">
+					<!-- Empty timeline -->
+				</div>
+
+				<!-- Input Box -->
+				<div class="cloud-input">
+					<button class="btn-icon"><span class="material-icons">attach_file</span></button>
+					<button class="btn-icon"><span class="material-icons">image</span></button>
+					<input type="text" placeholder="Nhập @, tin nhắn tới Cloud của tôi" />
+					<button class="btn-icon"><span class="material-icons">sentiment_satisfied_alt</span></button>
+					<button class="btn-icon btn-send"><span class="material-icons">send</span></button>
+				</div>
+			</div>
+
+			<!-- Cloud Info Panel -->
+			<div class="cloud-info-panel">
+				<div class="cloud-info-header">
+					<h3>Thông tin hội thoại</h3>
+				</div>
+
+				<div class="cloud-profile">
+					<div class="avatar large">
+						<span class="material-icons">cloud</span>
+					</div>
+					<h2>Cloud của tôi</h2>
+					<p>Lưu trữ và truy cập nhanh những nội dung quan trọng của bạn ngay trên Zalo</p>
+				</div>
+
+				<!-- Storage Usage -->
+				<div class="storage-section">
+					<div class="storage-header">
+						<span>Dung lượng</span>
+						<span class="storage-amount">0 MB / 500 MB</span>
+					</div>
+					<div class="storage-bar">
+						<div class="storage-fill" style="width: 0%"></div>
+					</div>
+					<div class="storage-legend">
+						<div class="legend-item"><span class="dot orange"></span> Ảnh</div>
+						<div class="legend-item"><span class="dot green"></span> Video</div>
+						<div class="legend-item"><span class="dot blue"></span> File</div>
+						<div class="legend-item"><span class="dot gray"></span> Khác</div>
+					</div>
+				</div>
+
+				<div class="cloud-section">
+					<h4>Xem và dọn dẹp Cloud của tôi</h4>
+					<div class="upgrade-card">
+						<span class="material-icons">info</span>
+						<div class="upgrade-text">
+							<strong>Nâng cấp dung lượng Cloud của tôi</strong>
+							<p>Mở rộng dung lượng lên đến 100GB và tự động bảo toàn dữ liệu trò chuyện với zCloud.</p>
+						</div>
+						<button class="btn-primary">Thêm dung lượng</button>
+					</div>
+				</div>
+
+				<div class="cloud-section">
+					<div class="section-header">
+						<span class="material-icons">schedule</span>
+						<span>Danh sách nhắc hẹn</span>
+					</div>
+				</div>
+
+				<div class="cloud-section">
+					<div class="section-header">
+						<span class="material-icons">image</span>
+						<span>Ảnh/Video</span>
+						<button class="btn-icon"><span class="material-icons">expand_more</span></button>
+					</div>
+					<div class="media-grid">
+						<!-- Empty media grid -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</div>
+
+<script src="js/script.js"></script>
+<script src="js/chat.js"></script>
+</body>
+</html>

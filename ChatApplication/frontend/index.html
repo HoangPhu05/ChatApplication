@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ChatApp — Log In</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+<span class="material-icons">light_mode</span>
+</button>
+<main class="page-wrap">
+<section class="card">
+<div class="left">
+<div class="brand">
+<span class="brand-blue">forum</span>
+<span class="brand-muted">Connect</span>
+</div>
+<h1 class="title">Connect with your team</h1>
+<p class="lead">The fastest and most secure way to collaborate on projects and ideas.</p>
+<div class="illustration">
+<img src="assets/illustration.svg" alt="illustration" />
+</div>
+</div>
+
+<aside class="right">
+<div class="login-card">
+<h2>Welcome Back!</h2>
+<p class="sub">Log in to continue to your workspace.</p>
+
+<form class="login-form" action="#" onsubmit="return false;">
+<label class="field">
+<span class="label">Email Address</span>
+<div class="input-row">
+<input id="email" type="email" placeholder="mailyou@example.com" />
+</div>
+</label>
+<label class="field">
+<span class="label">Password</span>
+<div class="pw-wrap">
+<input id="password" type="password" placeholder="lock•••••••" />
+<button type="button" id="pw-toggle" class="vis material-icons">visibility_off</button>
+</div>
+</label>
+
+<div class="row between small">
+<label class="checkbox"><input type="checkbox"/> Remember me</label>
+<a class="forgot" href="forgotpassword.html">Forgot password?</a>
+</div>
+
+<button class="btn primary">Log In</button>
+
+<div class="divider">Or continue with</div>
+
+<div class="socials">
+<button class="btn ghost">GitHub</button>
+<button class="btn ghost">Google</button>
+</div>
+
+<div class="small center" style="margin-top:16px">Don't have an account? <a href="register.html">Sign Up</a></div>
+</form>
+</div>
+</aside>
+</section>
+</main>
+
+<script src="assets/js/script.js"></script>
+</body>
+</html>

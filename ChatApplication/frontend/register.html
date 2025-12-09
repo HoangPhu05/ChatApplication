@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ChatApp — Create Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+<span class="material-icons">light_mode</span>
+</button>
+<main class="page-wrap centered">
+<section class="card-centered">
+<div class="login-card">
+<div class="brand-center">
+<span class="material-icons brand-icon">chat_bubble_outline</span>
+</div>
+<h2>Create Your Account</h2>
+<p class="sub">Join to start chatting with your team.</p>
+
+<form class="signup-form" action="#" onsubmit="return false;">
+<label class="field">
+<span class="label">Full Name</span>
+<div class="input-row">
+<input id="full-name" type="text" placeholder="Enter your full name" />
+</div>
+</label>
+<label class="field">
+<span class="label">Email Address</span>
+<div class="input-row">
+<input id="signup-email" type="email" placeholder="your.name@example.com" />
+</div>
+</label>
+<label class="field">
+<span class="label">Password</span>
+<div class="pw-wrap">
+<input id="signup-password" type="password" placeholder="Enter your password" />
+<button type="button" id="signup-pw-toggle" class="vis material-icons">visibility_off</button>
+</div>
+</label>
+<label class="field">
+<span class="label">Confirm Password</span>
+<div class="input-row">
+<input id="confirm-password" type="password" placeholder="Re-enter your password" />
+</div>
+</label>
+<div class="row col small">
+<label class="checkbox"><input id="tos" type="checkbox"/> I agree to the <a href="#">Terms of Service</a></label>
+<label class="checkbox"><input id="pp" type="checkbox"/> I acknowledge the <a href="#">Privacy Policy</a></label>
+</div>
+
+<button class="btn primary">Create Account</button>
+
+<div class="small center" style="margin-top:16px">Already have an account? <a href="index.html">Sign In</a></div>
+</form>
+</div>
+</section>
+</main>
+
+<script src="assets/js/script.js"></script>
+</body>
+</html>

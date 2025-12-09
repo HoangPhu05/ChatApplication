@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Forum Connect — Welcome</title>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="assets/css/style.css" />
+	</head>
+	<body>
+		<main class="page-wrap">
+			<section class="card">
+				<div class="left">
+					<div class="brand">
+						<span class="brand-blue">forum</span>
+						<span class="brand-muted">Connect</span>
+					</div>
+					<h1 class="title">Connect with your team</h1>
+					<p class="lead">The fastest and most secure way to collaborate on projects and ideas.</p>
+					<div class="illustration">
+						<img src="assets/illustration.svg" alt="illustration" />
+					</div>
+				</div>
+
+				<aside class="right">
+					<div class="login-card">
+						<h2>Welcome Back!</h2>
+						<p class="sub">Log in to continue to your workspace.</p>
+
+						<div class="tabs">
+										<button class="tab active" data-mode="login">Log In</button>
+										<button class="tab" data-mode="signup">Sign Up</button>
+						</div>
+
+									<!-- Login form -->
+									<form class="login-form" action="#" onsubmit="return false;">
+							<label class="field">
+								<span class="label">Email Address</span>
+								<div class="input-row">
+									<input id="email" type="email" placeholder="mailyou@example.com" />
+								</div>
+							</label>
+							<label class="field">
+								<span class="label">Password</span>
+								<div class="pw-wrap">
+									<input id="password" type="password" placeholder="lock•••••••" />
+									<button type="button" id="pw-toggle" class="vis material-icons">visibility_off</button>
+								</div>
+							</label>
+
+							<div class="row between small">
+								<label class="checkbox"><input type="checkbox"/> Remember me</label>
+								<a class="forgot" href="#">Forgot password?</a>
+							</div>
+
+							<button class="btn primary">Log In</button>
+
+							<div class="divider">Or continue with</div>
+
+							<div class="socials">
+								<button class="btn ghost"><span class="material-icons">code</span> GitHub</button>
+								<button class="btn ghost"><span class="material-icons">account_circle</span> Google</button>
+							</div>
+						</form>
+
+						<!-- Signup form (hidden by default) -->
+						<form class="signup-form hidden" action="#" onsubmit="return false;">
+							<label class="field">
+								<span class="label">Full Name</span>
+								<div class="input-row">
+									<input id="full-name" type="text" placeholder="Enter your full name" />
+								</div>
+							</label>
+							<label class="field">
+								<span class="label">Email Address</span>
+								<div class="input-row">
+									<input id="signup-email" type="email" placeholder="your.name@example.com" />
+								</div>
+							</label>
+							<label class="field">
+								<span class="label">Password</span>
+								<div class="pw-wrap">
+									<input id="signup-password" type="password" placeholder="Enter your password" />
+									<button type="button" id="signup-pw-toggle" class="vis material-icons">visibility_off</button>
+								</div>
+
+							</label>
+							<label class="field">
+								<span class="label">Confirm Password</span>
+								<div class="input-row">
+									<input id="confirm-password" type="password" placeholder="Re-enter your password" />
+								</div>
+							</label>
+							<div class="row col small">
+								<label class="checkbox"><input id="tos" type="checkbox"/> I agree to the <a href="#">Terms of Service</a></label>
+								<label class="checkbox"><input id="pp" type="checkbox"/> I acknowledge the <a href="#">Privacy Policy</a></label>
+							</div>
+
+							<button class="btn primary">Create Account</button>
+
+							<div class="divider"></div>
+
+						<div class="small center">Already have an account? <a href="#" id="to-signin">Sign In</a></div>
+					</form>
+
+					<!-- Forgot Password form (hidden by default) -->
+					<form class="forgot-form hidden" action="#" onsubmit="return false;">
+						<div class="forgot-icon">
+							<span class="material-icons">chat_bubble_outline</span>
+						</div>
+						<h2 class="forgot-title">Reset Your Password</h2>
+						<p class="forgot-desc">Enter the email address associated with your account, and we'll send you a link to reset your password.</p>
+
+						<label class="field">
+							<span class="label">Email Address</span>
+							<div class="input-row">
+								<input id="forgot-email" type="email" placeholder="you@example.com" />
+								<span class="input-icon material-icons">mail_outline</span>
+							</div>
+						</label>
+
+						<button class="btn primary">Send Reset Instructions</button>
+
+						<div class="small center" style="margin-top:16px"><a href="#" id="back-to-login">Back to Login</a></div>
+					</form>
+				</div>
+			</aside>
+		</section>
+	</main>		<script src="assets/js/script.js"></script>
+	</body>
+</html>

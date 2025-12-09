@@ -1,0 +1,128 @@
+:root{
+	--bg:#071018;
+	--panel:#0d1419;
+	--card:#0f1720;
+	--muted:#9aa4b2;
+	--accent:#1677ff;
+	--glass: rgba(255,255,255,0.02);
+	--text:#e6eef8;
+	--text-secondary:#9aa4b2;
+}
+
+/* Light theme */
+[data-theme="light"]{
+	--bg:#f5f7fa;
+	--panel:#ffffff;
+	--card:#ffffff;
+	--muted:#6b7280;
+	--accent:#1677ff;
+	--glass: rgba(0,0,0,0.02);
+	--text:#1a1a1a;
+	--text-secondary:#6b7280;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+	margin:0;
+	font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;
+	background:linear-gradient(180deg,var(--bg) 0%, var(--panel) 100%);
+	color:var(--text);
+	-webkit-font-smoothing:antialiased;
+	-moz-osx-font-smoothing:grayscale;
+	transition:background 0.3s ease, color 0.3s ease;
+}
+.page-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px}
+.card{
+	width:100%;max-width:980px;display:flex;border-radius:14px;overflow:hidden;box-shadow:0 28px 60px rgba(2,6,23,0.75);
+	background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.007));
+}
+.left{flex:1;padding:56px 56px 56px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));}
+.left{background-color:var(--card)}
+.right{width:440px;padding:28px 32px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));}
+.brand{display:flex;gap:8px;align-items:center;margin-bottom:18px}
+.brand-blue{color:var(--accent);font-weight:700}
+.brand-muted{color:var(--text-secondary);font-weight:500}
+.title{font-size:28px;margin:4px 0 12px;line-height:1.08;font-weight:700;color:var(--text)}
+.lead{color:var(--text-secondary);max-width:340px;margin-bottom:22px}
+.illustration{margin-top:18px;width:320px;background:transparent;border-radius:12px;padding:8px}
+.illustration img{width:100%;height:auto;border-radius:10px;display:block;box-shadow:0 8px 28px rgba(2,6,23,0.5)}
+
+.login-card{background:var(--card);padding:22px;border-radius:12px;color:var(--text);border:1px solid var(--glass);box-shadow:0 8px 30px rgba(0,0,0,0.1);transition:all 0.3s ease}
+.login-card h2{margin:6px 0 6px;font-size:20px;color:var(--text)}
+.login-card .sub{color:var(--text-secondary);font-size:13px;margin-bottom:10px}
+.tabs{display:flex;gap:8px;margin:14px 0}
+.tab{flex:1;padding:8px 10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer}
+.tab.active{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#fff}
+
+.login-form{margin-top:6px}
+.field{display:block;margin-bottom:12px}
+.label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:6px}
+.input-row input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--glass);background:var(--glass);color:var(--text);transition:all 0.3s ease}
+.pw-wrap{display:flex;gap:8px;align-items:center}
+.pw-wrap input{flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--glass);background:var(--glass);color:var(--text);transition:all 0.3s ease}
+.pw-wrap .vis{background:transparent;border:0;color:var(--text-secondary);padding:6px 8px;border-radius:6px;cursor:pointer}
+.row{display:flex;align-items:center}
+.between{justify-content:space-between}
+.col{flex-direction:column;align-items:flex-start}
+.small{font-size:13px;color:var(--text-secondary)}
+.checkbox input{margin-right:8px}
+.forgot{color:var(--accent);text-decoration:none;font-size:13px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid var(--glass);background:transparent;color:var(--text);cursor:pointer;transition:all 0.3s ease}
+.btn.primary{width:100%;background:linear-gradient(180deg,var(--accent),#0f66e6);border:none;font-weight:700;padding:12px 14px;color:#fff}
+.btn.ghost{background:transparent;border:1px solid var(--glass);padding:8px 12px}
+.divider{color:var(--text-secondary);text-align:center;font-size:13px;margin:12px 0}
+.socials{display:flex;gap:10px}
+.socials .btn.ghost{flex:1;display:flex;align-items:center;justify-content:center;gap:10px}
+
+/* Theme toggle button */
+.theme-toggle{position:fixed;bottom:24px;left:24px;width:48px;height:48px;border-radius:50%;background:var(--card);border:1px solid var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.1);transition:all 0.3s ease;z-index:1000}
+.theme-toggle:hover{transform:scale(1.05)}
+.theme-toggle .material-icons{font-size:24px;color:var(--text)}
+
+/* helpers */
+.hidden{display:none}
+.center{text-align:center}
+.col{flex-direction:column}
+
+/* signup strength meter */
+.strength{margin-top:8px}
+.strength-bar{height:6px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden}
+.strength-fill{width:0%;height:100%;background:#ff4d4f;transition:width 160ms ease, background 160ms ease}
+.strength-label{font-size:12px;color:var(--muted);margin-top:6px}
+.strength-text{font-weight:600;color:#ff4d4f}
+.checkbox{display:flex;align-items:center;gap:8px;margin:6px 0}
+
+.checkbox{display:flex;align-items:flex-start;gap:8px;margin:6px 0}
+.checkbox input{margin-top:2px}
+.checkbox a{color:var(--accent);text-decoration:underline}
+
+.small.center a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* forgot password form */
+.forgot-form{text-align:center}
+.forgot-icon{width:56px;height:56px;margin:0 auto 18px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.forgot-icon .material-icons{font-size:28px;color:#fff}
+.forgot-title{font-size:22px;margin:0 0 8px;font-weight:700;color:var(--text)}
+.forgot-desc{color:var(--text-secondary);font-size:13px;margin:0 0 20px;line-height:1.5}
+.forgot-form .field{text-align:left}
+.input-row{position:relative}
+.input-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:20px;pointer-events:none}
+
+/* centered card layout (for register and forgot password pages) */
+.page-wrap.centered{display:flex;align-items:center;justify-content:center}
+.card-centered{max-width:480px;width:100%;margin:0 auto}
+.brand-center{text-align:center;margin-bottom:18px}
+.brand-icon{width:56px;height:56px;background:var(--accent);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;color:#fff}
+.card-centered .login-card{text-align:center}
+.card-centered .login-card h2{text-align:center}
+.card-centered .login-card .sub{text-align:center}
+.card-centered .field{text-align:left}
+
+@media (max-width:900px){
+	.card{flex-direction:column;max-width:720px}
+	.right{width:100%}
+	.left{padding:28px}
+}
+
