@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/chat.css" />
+<link rel="stylesheet" href="css/chat-messages.css" />
 </head>
 <body>
 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -19,9 +20,9 @@
 	<aside class="chat-sidebar">
 		<div class="sidebar-header">
 			<div class="user-profile">
-				<div class="avatar online">HP</div>
+				<div class="avatar online" id="userAvatar">U</div>
 				<div class="user-info">
-					<h3>Hoang Phu</h3>
+					<h3 id="userName">Loading...</h3>
 					<span class="status">Online</span>
 				</div>
 			</div>
@@ -44,18 +45,7 @@
 		</div>
 
 		<div class="chat-list">
-			<div class="chat-item">
-				<div class="avatar online">
-					<span class="material-icons">cloud</span>
-				</div>
-				<div class="chat-info">
-					<div class="chat-header">
-						<h4>Cloud của tôi</h4>
-						<span class="time">Now</span>
-					</div>
-					<p class="last-message">Your personal cloud storage</p>
-				</div>
-			</div>
+			<!-- Chat items will be added here dynamically -->
 		</div>
 	</aside>
 
@@ -67,6 +57,85 @@
 			</div>
 			<h2>Your Messages</h2>
 			<p>Select a conversation from the list on the left to view it here.</p>
+		</div>
+
+		<!-- Normal Chat View -->
+		<div class="chat-view" id="normal-chat" style="display: none;">
+			<div class="chat-header">
+				<div class="chat-header-info">
+					<div class="avatar" id="chatAvatar">U</div>
+					<div class="chat-header-text">
+						<h3 id="chatName">User Name</h3>
+						<span id="chatStatus">Online</span>
+					</div>
+				</div>
+				<div class="chat-header-actions">
+					<button class="btn-icon" title="Search"><span class="material-icons">search</span></button>
+					<button class="btn-icon" title="Call"><span class="material-icons">call</span></button>
+					<button class="btn-icon" title="Video Call"><span class="material-icons">videocam</span></button>
+					<button class="btn-icon" title="Info"><span class="material-icons">info</span></button>
+				</div>
+			</div>
+
+			<!-- Messages Area -->
+			<div class="messages-container" id="messagesContainer">
+				<!-- Messages will be inserted here -->
+			</div>
+
+			<!-- Input Area -->
+			<div class="chat-input">
+				<button class="btn-icon" id="btnAttachFile" title="Attach file">
+					<span class="material-icons">attach_file</span>
+				</button>
+				<button class="btn-icon" id="btnAttachImage" title="Attach image">
+					<span class="material-icons">image</span>
+				</button>
+				<input type="file" id="fileInput" style="display:none" />
+				<input type="file" id="imageInput" accept="image/*" style="display:none" />
+				<input type="text" id="messageInput" placeholder="Type a message..." />
+				<button class="btn-icon" id="btnEmoji" title="Emoji">
+					<span class="material-icons">sentiment_satisfied_alt</span>
+				</button>
+				<button class="btn-icon btn-send" id="btnSend" title="Send">
+					<span class="material-icons">send</span>
+				</button>
+			</div>
+
+			<!-- Emoji Picker (Hidden by default) -->
+			<div class="emoji-picker" id="emojiPicker" style="display:none;">
+				<div class="emoji-grid">
+					<span class="emoji">😀</span><span class="emoji">😃</span><span class="emoji">😄</span><span class="emoji">😁</span>
+					<span class="emoji">😆</span><span class="emoji">😅</span><span class="emoji">🤣</span><span class="emoji">😂</span>
+					<span class="emoji">🙂</span><span class="emoji">🙃</span><span class="emoji">😉</span><span class="emoji">😊</span>
+					<span class="emoji">😇</span><span class="emoji">🥰</span><span class="emoji">😍</span><span class="emoji">🤩</span>
+					<span class="emoji">😘</span><span class="emoji">😗</span><span class="emoji">😚</span><span class="emoji">😙</span>
+					<span class="emoji">😋</span><span class="emoji">😛</span><span class="emoji">😜</span><span class="emoji">🤪</span>
+					<span class="emoji">😝</span><span class="emoji">🤑</span><span class="emoji">🤗</span><span class="emoji">🤭</span>
+					<span class="emoji">🤫</span><span class="emoji">🤔</span><span class="emoji">🤐</span><span class="emoji">🤨</span>
+					<span class="emoji">😐</span><span class="emoji">😑</span><span class="emoji">😶</span><span class="emoji">😏</span>
+					<span class="emoji">😒</span><span class="emoji">🙄</span><span class="emoji">😬</span><span class="emoji">🤥</span>
+					<span class="emoji">😌</span><span class="emoji">😔</span><span class="emoji">😪</span><span class="emoji">🤤</span>
+					<span class="emoji">😴</span><span class="emoji">😷</span><span class="emoji">🤒</span><span class="emoji">🤕</span>
+					<span class="emoji">🤢</span><span class="emoji">🤮</span><span class="emoji">🤧</span><span class="emoji">🥵</span>
+					<span class="emoji">🥶</span><span class="emoji">😎</span><span class="emoji">🤓</span><span class="emoji">🧐</span>
+					<span class="emoji">😕</span><span class="emoji">😟</span><span class="emoji">🙁</span><span class="emoji">☹️</span>
+					<span class="emoji">😮</span><span class="emoji">😯</span><span class="emoji">😲</span><span class="emoji">😳</span>
+					<span class="emoji">🥺</span><span class="emoji">😦</span><span class="emoji">😧</span><span class="emoji">😨</span>
+					<span class="emoji">😰</span><span class="emoji">😥</span><span class="emoji">😢</span><span class="emoji">😭</span>
+					<span class="emoji">😱</span><span class="emoji">😖</span><span class="emoji">😣</span><span class="emoji">😞</span>
+					<span class="emoji">😓</span><span class="emoji">😩</span><span class="emoji">😫</span><span class="emoji">🥱</span>
+					<span class="emoji">👍</span><span class="emoji">👎</span><span class="emoji">👌</span><span class="emoji">✌️</span>
+					<span class="emoji">🤞</span><span class="emoji">🤟</span><span class="emoji">🤘</span><span class="emoji">🤙</span>
+					<span class="emoji">👏</span><span class="emoji">🙌</span><span class="emoji">👐</span><span class="emoji">🤲</span>
+					<span class="emoji">🤝</span><span class="emoji">🙏</span><span class="emoji">✍️</span><span class="emoji">💪</span>
+					<span class="emoji">❤️</span><span class="emoji">🧡</span><span class="emoji">💛</span><span class="emoji">💚</span>
+					<span class="emoji">💙</span><span class="emoji">💜</span><span class="emoji">🖤</span><span class="emoji">🤍</span>
+					<span class="emoji">🤎</span><span class="emoji">💔</span><span class="emoji">❣️</span><span class="emoji">💕</span>
+					<span class="emoji">💞</span><span class="emoji">💓</span><span class="emoji">💗</span><span class="emoji">💖</span>
+					<span class="emoji">💘</span><span class="emoji">💝</span><span class="emoji">💟</span><span class="emoji">🔥</span>
+					<span class="emoji">✨</span><span class="emoji">⭐</span><span class="emoji">🌟</span><span class="emoji">💫</span>
+				</div>
+			</div>
 		</div>
 
 		<!-- Cloud Storage View (Hidden by default) -->

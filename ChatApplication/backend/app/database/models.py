@@ -18,6 +18,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String, unique=True, index=True, nullable=True)  # Số điện thoại để tìm kiếm
     display_name = Column(String, nullable=False)
     password = Column(String, nullable=False)
     avatar = Column(String, nullable=True)
@@ -79,3 +80,45 @@ class CloudFile(Base):
     
     # Relationships
     owner = relationship("User", back_populates="cloud_files")
+
+# API base URL
+API_URL = 'http://localhost:8000/api'
+
+# Example: Register user
+async def registerUser(username, email, password):
+    try:
+        response = await fetch(f"{API_URL}/auth/register", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                email: email,
+                password: password
+            })
+        })
+        data = await response.json()
+        return data
+    except error:
+        console.error('Error:', error)
+
+# Example: Login
+async def loginUser(username, password):
+    try:
+        response = await fetch(f"{API_URL}/auth/login", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        })
+        data = await response.json()
+        # Save token
+        localStorage.setItem('token', data.access_token)
+        return data
+    except error:
+        console.error('Error:', error)

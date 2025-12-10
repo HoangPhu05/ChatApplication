@@ -41,8 +41,28 @@ async def search_users(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
+    # Tìm kiếm theo username, display_name, email hoặc phone
+    if not query:
+        # Nếu không có query, trả về danh sách rỗng
+        return []
+    
+    # Build search conditions
+    search_conditions = [
+        models.User.username.contains(query),
+        models.User.display_name.contains(query),
+        models.User.email.contains(query)
+    ]
+    
+    # Only add phone search if phone is not null
+    if query:
+        search_conditions.append(
+            models.User.phone.ilike(f"%{query}%")
+        )
+    
+    from sqlalchemy import or_
     users = db.query(models.User).filter(
         models.User.id != current_user.id,
-        models.User.username.contains(query) | models.User.display_name.contains(query)
+        or_(*search_conditions)
     ).limit(20).all()
+    
     return users

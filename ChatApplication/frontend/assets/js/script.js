@@ -1,3 +1,11 @@
+// API Configuration
+const API_URL = 'http://localhost:8000/api';
+
+// Helper function to show messages
+function showMessage(message, type = 'info') {
+  alert(message);
+}
+
 // Common script for all auth pages
 document.addEventListener('DOMContentLoaded', () => {
   // Theme toggle
@@ -50,6 +58,137 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         signupPwInput.type = 'password';
         signupPwToggle.textContent = 'visibility_off';
+      }
+    });
+  }
+
+  // Login form submission
+  const loginForm = document.querySelector('.login-form');
+  const loginBtn = loginForm?.querySelector('button[type="submit"]');
+  
+  if (loginForm && loginBtn) {
+    loginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      
+      console.log('Login attempt:', { username: email, password: '***' });
+      
+      if (!email || !password) {
+        showMessage('Vui lòng nhập username/email và mật khẩu!', 'error');
+        return;
+      }
+
+      // Disable button while processing
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Đang đăng nhập...';
+
+      try {
+        console.log('Sending request to:', `${API_URL}/auth/login`);
+        
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: email,
+            password: password
+          })
+        });
+
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (response.ok) {
+          // Lưu token và thông tin user
+          localStorage.setItem('token', data.access_token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          showMessage('Đăng nhập thành công!', 'success');
+          
+          // Chuyển đến trang chat
+          setTimeout(() => {
+            window.location.href = 'assets/chat.html';
+          }, 500);
+        } else {
+          showMessage(data.detail || 'Đăng nhập thất bại!', 'error');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Log In';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showMessage('Không thể kết nối đến server. Vui lòng kiểm tra server đang chạy!', 'error');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Log In';
+      }
+    });
+  }
+
+  // Register form submission
+  const registerForm = document.querySelector('.signup-form');
+  if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const displayName = document.getElementById('display-name')?.value.trim();
+      const username = document.getElementById('signup-username')?.value.trim();
+      const email = document.getElementById('signup-email')?.value.trim();
+      const phone = document.getElementById('signup-phone')?.value.trim();
+      const password = document.getElementById('signup-password')?.value;
+      const confirmPassword = document.getElementById('confirm-password')?.value;
+      
+      if (!displayName || !username || !email || !password) {
+        alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        alert('Mật khẩu xác nhận không khớp!');
+        return;
+      }
+      
+      if (password.length < 6) {
+        alert('Mật khẩu phải có ít nhất 6 ký tự!');
+        return;
+      }
+
+      try {
+        const requestBody = {
+          username: username,
+          email: email,
+          password: password,
+          display_name: displayName
+        };
+        
+        if (phone) {
+          requestBody.phone = phone;
+        }
+        
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
+          
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } else {
+          alert(data.detail || 'Đăng ký thất bại!');
+        }
+      } catch (error) {
+        console.error('Register error:', error);
+        alert('Không thể kết nối đến server. Vui lòng thử lại!');
       }
     });
   }

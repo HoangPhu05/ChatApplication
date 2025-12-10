@@ -78,9 +78,10 @@ async def get_conversation_messages(
     if current_user not in conversation.participants:
         raise HTTPException(status_code=403, detail="Access denied")
     
+    # Get messages ordered by created_at ASC (oldest first, newest last)
     messages = db.query(models.Message).filter(
         models.Message.conversation_id == conversation_id
-    ).order_by(models.Message.created_at.desc()).offset(skip).limit(limit).all()
+    ).order_by(models.Message.created_at.asc()).offset(skip).limit(limit).all()
     
     return messages
 

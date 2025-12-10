@@ -33,15 +33,15 @@
 
 <form class="login-form" action="#" onsubmit="return false;">
 <label class="field">
-<span class="label">Email Address</span>
+<span class="label">Email hoặc Username</span>
 <div class="input-row">
-<input id="email" type="email" placeholder="mailyou@example.com" />
+<input id="email" type="text" placeholder="alice_nguyen hoặc alice@example.com" required />
 </div>
 </label>
 <label class="field">
 <span class="label">Password</span>
 <div class="pw-wrap">
-<input id="password" type="password" placeholder="lock•••••••" />
+<input id="password" type="password" placeholder="demo123" required />
 <button type="button" id="pw-toggle" class="vis material-icons">visibility_off</button>
 </div>
 </label>
@@ -51,7 +51,7 @@
 <a class="forgot" href="forgotpassword.html">Forgot password?</a>
 </div>
 
-<button class="btn primary">Log In</button>
+<button type="submit" class="btn primary">Log In</button>
 
 <div class="divider">Or continue with</div>
 

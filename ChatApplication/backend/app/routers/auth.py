@@ -39,14 +39,18 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     
     return db_user
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == user_credentials.email).first()
+    # Tìm user bằng email hoặc username
+    user = db.query(models.User).filter(
+        (models.User.email == user_credentials.username) | 
+        (models.User.username == user_credentials.username)
+    ).first()
     
     if not user or not verify_password(user_credentials.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Incorrect username/email or password"
         )
     
     # Update user online status
@@ -59,7 +63,18 @@ async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    # Return token và thông tin user
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "display_name": user.display_name,
+            "avatar": user.avatar
+        }
+    }
 
 @router.post("/logout")
 async def logout(current_user: models.User = Depends(get_db)):

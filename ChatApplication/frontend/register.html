@@ -23,28 +23,40 @@
 
 <form class="signup-form" action="#" onsubmit="return false;">
 <label class="field">
-<span class="label">Full Name</span>
+<span class="label">Display Name</span>
 <div class="input-row">
-<input id="full-name" type="text" placeholder="Enter your full name" />
+<input id="display-name" type="text" placeholder="Tên hiển thị của bạn" required />
+</div>
+</label>
+<label class="field">
+<span class="label">Username</span>
+<div class="input-row">
+<input id="signup-username" type="text" placeholder="username_cua_ban" required />
 </div>
 </label>
 <label class="field">
 <span class="label">Email Address</span>
 <div class="input-row">
-<input id="signup-email" type="email" placeholder="your.name@example.com" />
+<input id="signup-email" type="email" placeholder="your.name@example.com" required />
+</div>
+</label>
+<label class="field">
+<span class="label">Phone Number (Optional)</span>
+<div class="input-row">
+<input id="signup-phone" type="tel" placeholder="0901234567" />
 </div>
 </label>
 <label class="field">
 <span class="label">Password</span>
 <div class="pw-wrap">
-<input id="signup-password" type="password" placeholder="Enter your password" />
+<input id="signup-password" type="password" placeholder="Ít nhất 6 ký tự" required />
 <button type="button" id="signup-pw-toggle" class="vis material-icons">visibility_off</button>
 </div>
 </label>
 <label class="field">
 <span class="label">Confirm Password</span>
 <div class="input-row">
-<input id="confirm-password" type="password" placeholder="Re-enter your password" />
+<input id="confirm-password" type="password" placeholder="Nhập lại mật khẩu" required />
 </div>
 </label>
 <div class="row col small">

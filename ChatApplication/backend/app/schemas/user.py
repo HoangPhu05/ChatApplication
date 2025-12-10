@@ -5,6 +5,7 @@ from datetime import datetime
 class UserBase(BaseModel):
     email: EmailStr
     username: str
+    phone: Optional[str] = None
     display_name: str
 
 class UserCreate(UserBase):
@@ -27,12 +28,13 @@ class UserResponse(UserBase):
         from_attributes = True
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    username: str  # Có thể là email hoặc username
     password: str
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user: Optional[dict] = None
 
 class TokenData(BaseModel):
     user_id: Optional[int] = None
