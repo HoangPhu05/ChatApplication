@@ -59,12 +59,14 @@ class Message(Base):
     file_name = Column(String, nullable=True)
     file_size = Column(Integer, nullable=True)
     is_read = Column(Boolean, default=False)
+    reply_to_id = Column(Integer, ForeignKey("messages.id"), nullable=True)  # ID của tin nhắn được reply
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
     conversation = relationship("Conversation", back_populates="messages")
+    reply_to = relationship("Message", remote_side=[id], backref="replies")  # Tin nhắn được reply
 
 class CloudFile(Base):
     __tablename__ = "cloud_files"

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.core.deps import get_db, get_current_user
 from app.database import models
@@ -26,7 +26,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-@router.post("/", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=MessageWithSender, status_code=status.HTTP_201_CREATED)
 async def send_message(
     message_data: MessageCreate,
     current_user: models.User = Depends(get_current_user),
@@ -51,7 +51,8 @@ async def send_message(
         message_type=message_data.message_type,
         file_url=message_data.file_url,
         file_name=message_data.file_name,
-        file_size=message_data.file_size
+        file_size=message_data.file_size,
+        reply_to_id=message_data.reply_to_id
     )
     db.add(message)
     db.commit()
@@ -79,7 +80,10 @@ async def get_conversation_messages(
         raise HTTPException(status_code=403, detail="Access denied")
     
     # Get messages ordered by created_at ASC (oldest first, newest last)
-    messages = db.query(models.Message).filter(
+    # Eager load reply_to relationship and its sender
+    messages = db.query(models.Message).options(
+        joinedload(models.Message.reply_to).joinedload(models.Message.sender)
+    ).filter(
         models.Message.conversation_id == conversation_id
     ).order_by(models.Message.created_at.asc()).offset(skip).limit(limit).all()
     

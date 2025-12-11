@@ -108,6 +108,20 @@
 
 			<!-- Input Area -->
 			<div class="chat-input">
+				<!-- Reply Preview (Hidden by default) -->
+				<div class="reply-preview" id="replyPreview" style="display: none;">
+					<div class="reply-preview-content">
+						<span class="material-icons">reply</span>
+						<div class="reply-info">
+							<div class="reply-sender"></div>
+							<div class="reply-text"></div>
+						</div>
+					</div>
+					<button class="btn-icon" id="btnCancelReply" title="Cancel reply">
+						<span class="material-icons">close</span>
+					</button>
+				</div>
+				
 				<button class="btn-icon" id="btnAttachFile" title="Attach file">
 					<span class="material-icons">attach_file</span>
 				</button>

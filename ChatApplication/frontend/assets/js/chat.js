@@ -576,6 +576,39 @@ function createMessageElement(msg, isSent) {
     bubble.textContent = msg.content || msg.message_text;
   }
   
+  // Add reply preview if this message is replying to another
+  if (msg.reply_to_id && msg.reply_to) {
+    console.log('Reply message data:', msg.reply_to);
+    const replyDiv = document.createElement('div');
+    replyDiv.className = 'message-reply';
+    replyDiv.onclick = () => scrollToMessage(msg.reply_to_id);
+    
+    const replySender = document.createElement('div');
+    replySender.className = 'message-reply-sender';
+    replySender.textContent = msg.reply_to.sender_id === msg.sender_id ? 'Chính mình' : (msg.reply_to.sender?.display_name || 'User');
+    
+    const replyText = document.createElement('div');
+    replyText.className = 'message-reply-text';
+    replyText.textContent = msg.reply_to.content || (msg.reply_to.message_type === 'image' ? '📷 Ảnh' : '📎 File');
+    
+    replyDiv.appendChild(replySender);
+    replyDiv.appendChild(replyText);
+    bubble.insertBefore(replyDiv, bubble.firstChild);
+  }
+  
+  // Add message actions (reply button)
+  const actions = document.createElement('div');
+  actions.className = 'message-actions';
+  
+  const replyBtn = document.createElement('button');
+  replyBtn.className = 'btn-icon';
+  replyBtn.title = 'Trả lời';
+  replyBtn.innerHTML = '<span class="material-icons">reply</span>';
+  replyBtn.onclick = () => setReplyMessage(msg);
+  
+  actions.appendChild(replyBtn);
+  messageDiv.appendChild(actions);
+  
   const time = document.createElement('div');
   time.className = 'message-time';
   time.textContent = formatTime(msg.created_at || msg.timestamp);
@@ -620,7 +653,8 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
       conversation_id: currentConversationId,
       content: content,
       message_type: type,
-      file_url: fileUrl
+      file_url: fileUrl,
+      reply_to_id: currentReplyMessage ? currentReplyMessage.id : null
     };
     console.log('Sending message data:', messageData);
     
@@ -630,12 +664,7 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        conversation_id: currentConversationId,
-        content: content,
-        message_type: type,
-        file_url: fileUrl
-      })
+      body: JSON.stringify(messageData)
     });
     
     if (response.ok) {
@@ -643,6 +672,11 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
       console.log('Message sent successfully:', newMessage);
       addMessageToUI(newMessage, true);
       document.getElementById('messageInput').value = '';
+      
+      // Clear reply after sending
+      if (currentReplyMessage) {
+        cancelReply();
+      }
     } else {
       const errorText = await response.text();
       console.error('Failed to send message:', errorText);
@@ -1437,8 +1471,53 @@ async function shareFile() {
   }
 }
 
+// ========== REPLY MESSAGE FUNCTIONS ==========
+
+let currentReplyMessage = null;
+
+// Set reply message
+function setReplyMessage(message) {
+  currentReplyMessage = message;
+  
+  const replyPreview = document.getElementById('replyPreview');
+  const replySender = replyPreview.querySelector('.reply-sender');
+  const replyText = replyPreview.querySelector('.reply-text');
+  
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const senderName = message.sender_id === currentUser.id ? 'Chính mình' : (currentChatUser?.display_name || 'User');
+  
+  replySender.textContent = senderName;
+  
+  // Set reply text based on message type
+  if (message.message_type === 'image') {
+    replyText.textContent = '📷 Ảnh';
+  } else if (message.message_type === 'file') {
+    replyText.textContent = `📎 ${message.file_name || 'File'}`;
+  } else {
+    replyText.textContent = message.content || '';
+  }
+  
+  replyPreview.style.display = 'flex';
+  
+  // Focus on input
+  document.getElementById('messageInput').focus();
+}
+
+// Cancel reply
+function cancelReply() {
+  currentReplyMessage = null;
+  const replyPreview = document.getElementById('replyPreview');
+  replyPreview.style.display = 'none';
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+  // Cancel reply button
+  const btnCancelReply = document.getElementById('btnCancelReply');
+  if (btnCancelReply) {
+    btnCancelReply.addEventListener('click', cancelReply);
+  }
+  
   // Create group button
   const btnCreateGroup = document.getElementById('btnCreateGroup');
   if (btnCreateGroup) {
