@@ -105,6 +105,45 @@ async def mark_message_read(
     db.refresh(message)
     return message
 
+@router.delete("/{message_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_message(
+    message_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    message = db.query(models.Message).filter(models.Message.id == message_id).first()
+    
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Only allow deleting own messages
+    if message.sender_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only delete your own messages")
+    
+    db.delete(message)
+    db.commit()
+    return None
+
+@router.websocket("/ws/{user_id}")
+async def delete_message(
+    message_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    message = db.query(models.Message).filter(models.Message.id == message_id).first()
+    
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Only allow sender to delete their own message
+    if message.sender_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only delete your own messages")
+    
+    db.delete(message)
+    db.commit()
+    
+    return None
+
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
     await manager.connect(user_id, websocket)

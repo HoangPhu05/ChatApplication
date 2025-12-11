@@ -139,10 +139,20 @@
   font-size: 11px;
   color: var(--text-secondary);
   padding: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .message.sent .message-time {
   text-align: right;
+  justify-content: flex-end;
+}
+
+.read-receipt {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
 }
 
 /* Date Divider */
@@ -447,4 +457,71 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Message Context Menu */
+.message-context-menu {
+  position: fixed;
+  background: var(--card);
+  border: 1px solid var(--glass);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  padding: 4px 0;
+  min-width: 180px;
+  z-index: 10000;
+  animation: contextMenuFadeIn 0.15s ease;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.context-menu-item:hover {
+  background: var(--glass);
+}
+
+.context-menu-item .material-icons {
+  font-size: 20px;
+  color: var(--text-secondary);
+}
+
+.context-menu-item#contextDelete {
+  color: #dc3545;
+}
+
+.context-menu-item#contextDelete .material-icons {
+  color: #dc3545;
+}
+
+.context-menu-item#contextDelete:hover {
+  background: rgba(220, 53, 69, 0.1);
 }

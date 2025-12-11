@@ -440,6 +440,11 @@ function displayMessages(messages) {
     const isSent = msg.sender_id === currentUser.id;
     const messageDiv = createMessageElement(msg, isSent);
     container.appendChild(messageDiv);
+    
+    // Mark as read if message is received and not yet read
+    if (!isSent && !msg.is_read) {
+      markMessageAsRead(msg.id);
+    }
   });
   
   // Auto scroll to bottom
@@ -613,11 +618,30 @@ function createMessageElement(msg, isSent) {
   time.className = 'message-time';
   time.textContent = formatTime(msg.created_at || msg.timestamp);
   
+  // Add read receipt for sent messages
+  if (isSent) {
+    const receipt = document.createElement('span');
+    receipt.className = 'read-receipt';
+    receipt.innerHTML = msg.is_read 
+      ? '<span class="material-icons" style="font-size: 14px; color: #FFC107;">done_all</span>' 
+      : '<span class="material-icons" style="font-size: 14px; color: rgba(255,255,255,0.6);">done</span>';
+    receipt.title = msg.is_read ? 'Đã xem' : 'Đã gửi';
+    time.appendChild(receipt);
+  }
+  
   content.appendChild(bubble);
   content.appendChild(time);
   
   messageDiv.appendChild(avatar);
   messageDiv.appendChild(content);
+  
+  // Add context menu on right click (only for sent messages)
+  if (isSent) {
+    messageDiv.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showMessageContextMenu(e, msg);
+    });
+  }
   
   return messageDiv;
 }
@@ -634,6 +658,80 @@ function formatFileSize(bytes) {
 function formatTime(timestamp) {
   const date = new Date(timestamp);
   return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Message Context Menu
+let currentContextMessage = null;
+
+function showMessageContextMenu(event, message) {
+  const contextMenu = document.getElementById('messageContextMenu');
+  currentContextMessage = message;
+  
+  // Position the menu
+  contextMenu.style.display = 'block';
+  contextMenu.style.left = event.pageX + 'px';
+  contextMenu.style.top = event.pageY + 'px';
+  
+  // Close on click outside
+  setTimeout(() => {
+    document.addEventListener('click', closeContextMenu);
+  }, 10);
+}
+
+function closeContextMenu() {
+  const contextMenu = document.getElementById('messageContextMenu');
+  contextMenu.style.display = 'none';
+  currentContextMessage = null;
+  document.removeEventListener('click', closeContextMenu);
+}
+
+// Delete message
+async function deleteMessage(messageId) {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:8000/api/messages/${messageId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete message');
+    }
+    
+    // Remove message from UI
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+      messageElement.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => {
+        messageElement.remove();
+      }, 300);
+    }
+    
+    // Reload messages to sync
+    loadMessages(currentConversationId);
+    
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    alert('Không thể thu hồi tin nhắn. Vui lòng thử lại.');
+  }
+}
+
+// Mark message as read
+async function markMessageAsRead(messageId) {
+  try {
+    const token = localStorage.getItem('token');
+    await fetch(`http://localhost:8000/api/messages/${messageId}/read`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    console.error('Error marking message as read:', error);
+  }
 }
 
 // Send message
@@ -1516,6 +1614,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCancelReply = document.getElementById('btnCancelReply');
   if (btnCancelReply) {
     btnCancelReply.addEventListener('click', cancelReply);
+  }
+  
+  // Context menu items
+  const contextReply = document.getElementById('contextReply');
+  const contextDelete = document.getElementById('contextDelete');
+  
+  if (contextReply) {
+    contextReply.addEventListener('click', () => {
+      if (currentContextMessage) {
+        setReplyMessage(currentContextMessage);
+        closeContextMenu();
+      }
+    });
+  }
+  
+  if (contextDelete) {
+    contextDelete.addEventListener('click', () => {
+      if (currentContextMessage) {
+        if (confirm('Bạn có chắc muốn thu hồi tin nhắn này?')) {
+          deleteMessage(currentContextMessage.id);
+          closeContextMenu();
+        }
+      }
+    });
   }
   
   // Create group button
