@@ -279,6 +279,41 @@
 	</div>
 </div>
 
+<!-- Share Modal -->
+<div id="shareModal" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h2>Chia sẻ file</h2>
+			<button class="btn-close" onclick="closeShareModal()">
+				<span class="material-icons">close</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label>Tìm kiếm người nhận</label>
+				<div class="search-box">
+					<span class="material-icons">search</span>
+					<input type="text" id="shareSearchInput" placeholder="Nhập tên hoặc số điện thoại..." />
+				</div>
+			</div>
+
+			<!-- Selected Recipients -->
+			<div id="selectedRecipients" class="selected-members">
+				<!-- Selected recipients will appear here -->
+			</div>
+
+			<!-- Search Results -->
+			<div id="shareSearchResults" class="search-results">
+				<!-- Search results will appear here -->
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn-secondary" onclick="closeShareModal()">Hủy</button>
+			<button class="btn-primary" id="btnShareSubmit">Chia sẻ</button>
+		</div>
+	</div>
+</div>
+
 <script src="js/script.js"></script>
 <script src="js/chat.js"></script>
 </body>

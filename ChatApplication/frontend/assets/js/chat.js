@@ -476,6 +476,18 @@ function createMessageElement(msg, isSent) {
     hdBadge.textContent = 'HD';
     hdBadge.style.cssText = 'position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; z-index: 1;';
     imgContainer.appendChild(hdBadge);
+
+    // Share button
+    const shareBtn = document.createElement('div');
+    shareBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">share</span>';
+    shareBtn.style.cssText = 'position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; padding: 6px; border-radius: 50%; cursor: pointer; z-index: 2; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;';
+    shareBtn.onmouseover = () => shareBtn.style.background = 'rgba(0,0,0,0.8)';
+    shareBtn.onmouseout = () => shareBtn.style.background = 'rgba(0,0,0,0.6)';
+    shareBtn.onclick = (e) => {
+      e.stopPropagation();
+      openShareModal(msg);
+    };
+    imgContainer.appendChild(shareBtn);
     
     const img = document.createElement('img');
     img.src = `http://localhost:8000${fileUrl}`;
@@ -523,21 +535,36 @@ function createMessageElement(msg, isSent) {
     }
     
     fileCard.innerHTML = `
-      <a href="http://localhost:8000${fileUrl}" download="${fileName}" style="text-decoration: none; color: inherit; display: block;">
-        <div style="display: flex; align-items: center; gap: 8px; padding: 4px 10px; background: ${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}; border-radius: 8px; max-width: 280px; transition: all 0.2s ease; border: 1px solid ${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'};" onmouseover="this.style.background='${isSent ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'}'" onmouseout="this.style.background='${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}'">
-          <div style="width: 28px; height: 28px; background: ${iconBg}; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
-            ${iconText}
-          </div>
-          <div style="flex: 1; min-width: 0; line-height: 1.2;">
-            <div style="font-weight: 600; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${isSent ? 'white' : 'var(--text)'};">${fileName}</div>
-            <div style="font-size: 10px; opacity: 0.7; margin-top: 1px; color: ${isSent ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)'};">${fileExt}</div>
-          </div>
-          <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <span style="font-size: 13px;">📥</span>
-          </div>
+      <div style="display: flex; align-items: center; gap: 8px; padding: 4px 10px; background: ${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}; border-radius: 8px; max-width: 280px; transition: all 0.2s ease; border: 1px solid ${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'};" onmouseover="this.style.background='${isSent ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'}'" onmouseout="this.style.background='${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}'">
+        <div style="width: 28px; height: 28px; background: ${iconBg}; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+          ${iconText}
         </div>
-      </a>
+        <div style="flex: 1; min-width: 0; line-height: 1.2;">
+          <div style="font-weight: 600; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${isSent ? 'white' : 'var(--text)'};">${fileName}</div>
+          <div style="font-size: 10px; opacity: 0.7; margin-top: 1px; color: ${isSent ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)'};">${fileExt}</div>
+        </div>
+        <div style="display: flex; gap: 4px; flex-shrink: 0;">
+          <div class="share-file-btn" style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <span class="material-icons" style="font-size: 14px;">share</span>
+          </div>
+          <a href="http://localhost:8000${fileUrl}" download="${fileName}" style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <span style="font-size: 13px;">📥</span>
+          </a>
+        </div>
+      </div>
     `;
+    
+    // Add share button click handler
+    setTimeout(() => {
+      const shareFileBtn = fileCard.querySelector('.share-file-btn');
+      if (shareFileBtn) {
+        shareFileBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openShareModal(msg);
+        };
+      }
+    }, 0);
     
     bubble.appendChild(fileCard);
     bubble.style.padding = '0';
@@ -844,7 +871,25 @@ async function loadConversationsList() {
       
       const currentUser = JSON.parse(localStorage.getItem('user'));
       
+      // Deduplicate conversations - keep only the most recent conversation for each unique user/group
+      const seenUsers = new Map();
+      const uniqueConversations = [];
+      
       conversations.forEach(conv => {
+        if (conv.is_group) {
+          // Keep all group conversations
+          uniqueConversations.push(conv);
+        } else {
+          // For 1-on-1, keep only the first occurrence (most recent)
+          const otherUser = conv.participants?.find(p => p.id !== currentUser.id);
+          if (otherUser && !seenUsers.has(otherUser.id)) {
+            seenUsers.set(otherUser.id, true);
+            uniqueConversations.push(conv);
+          }
+        }
+      });
+      
+      uniqueConversations.forEach(conv => {
         const chatItem = document.createElement('div');
         chatItem.className = 'chat-item';
         
@@ -1115,6 +1160,234 @@ async function createGroup() {
   }
 }
 
+// ============= SHARE FILE/IMAGE FUNCTIONALITY =============
+
+let currentShareMessage = null;
+let selectedRecipients = [];
+
+// Open share modal
+function openShareModal(message) {
+  currentShareMessage = message;
+  selectedRecipients = [];
+  
+  const modal = document.getElementById('shareModal');
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  
+  updateSelectedRecipientsDisplay();
+  document.getElementById('shareSearchInput').value = '';
+  document.getElementById('shareSearchResults').innerHTML = '';
+}
+
+// Close share modal
+function closeShareModal() {
+  const modal = document.getElementById('shareModal');
+  modal.classList.remove('active');
+  modal.style.display = 'none';
+  currentShareMessage = null;
+  selectedRecipients = [];
+}
+
+// Update selected recipients display
+function updateSelectedRecipientsDisplay() {
+  const container = document.getElementById('selectedRecipients');
+  
+  if (selectedRecipients.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">Chưa chọn người nhận</p>';
+  } else {
+    container.innerHTML = selectedRecipients.map(recipient => `
+      <div class="member-tag">
+        <span>${recipient.display_name}</span>
+        <button class="remove-member" onclick="removeRecipient(${recipient.id})">
+          <span class="material-icons" style="font-size: 16px;">close</span>
+        </button>
+      </div>
+    `).join('');
+  }
+  
+  // Update button state
+  const shareBtn = document.getElementById('btnShareSubmit');
+  if (selectedRecipients.length === 0) {
+    shareBtn.disabled = true;
+  } else {
+    shareBtn.disabled = false;
+  }
+}
+
+// Remove recipient from selection
+function removeRecipient(userId) {
+  selectedRecipients = selectedRecipients.filter(r => r.id !== userId);
+  updateSelectedRecipientsDisplay();
+  
+  // Update search results to reflect deselection
+  const resultItem = document.querySelector(`.share-result-item[data-user-id="${userId}"]`);
+  if (resultItem) {
+    resultItem.classList.remove('selected');
+  }
+}
+
+// Toggle recipient selection
+function toggleRecipientSelection(user) {
+  const index = selectedRecipients.findIndex(r => r.id === user.id);
+  
+  if (index === -1) {
+    selectedRecipients.push(user);
+  } else {
+    selectedRecipients.splice(index, 1);
+  }
+  
+  updateSelectedRecipientsDisplay();
+}
+
+// Handle recipient click from search results
+function handleRecipientClick(element) {
+  const userData = element.getAttribute('data-user');
+  const user = JSON.parse(userData);
+  toggleRecipientSelection(user);
+  element.classList.toggle('selected');
+}
+
+// Search for recipients
+async function searchShareRecipients(query) {
+  const resultsDiv = document.getElementById('shareSearchResults');
+  
+  if (!query.trim()) {
+    resultsDiv.innerHTML = '';
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/users?query=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Search failed');
+    
+    const users = await response.json();
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+    // Filter out current user
+    const filteredUsers = users.filter(u => u.id !== currentUser.id);
+    
+    if (filteredUsers.length === 0) {
+      resultsDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Không tìm thấy người dùng</p>';
+      return;
+    }
+    
+    resultsDiv.innerHTML = filteredUsers.map(user => {
+      const isSelected = selectedRecipients.some(r => r.id === user.id);
+      const userJson = JSON.stringify(user);
+      return `
+        <div class="search-result-item share-result-item ${isSelected ? 'selected' : ''}" data-user-id="${user.id}" data-user='${userJson.replace(/'/g, "&apos;")}' onclick="handleRecipientClick(this)">
+          <div class="avatar">${user.display_name.charAt(0).toUpperCase()}</div>
+          <div class="search-result-info">
+            <div class="name">${user.display_name}</div>
+            <div class="phone">${user.phone || user.email}</div>
+          </div>
+          ${isSelected ? '<span class="material-icons" style="color: var(--accent);">check_circle</span>' : ''}
+        </div>
+      `;
+    }).join('');
+    
+  } catch (error) {
+    console.error('Error searching recipients:', error);
+    resultsDiv.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">Lỗi tìm kiếm</p>';
+  }
+}
+
+// Share file/image
+async function shareFile() {
+  if (selectedRecipients.length === 0) {
+    alert('Vui lòng chọn ít nhất 1 người nhận!');
+    return;
+  }
+  
+  if (!currentShareMessage) {
+    alert('Không tìm thấy file để chia sẻ!');
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+    // Share to each recipient
+    for (const recipient of selectedRecipients) {
+      // First, get all existing conversations to find if one already exists
+      const allConvResponse = await fetch(`${API_URL}/conversations`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!allConvResponse.ok) continue;
+      
+      const allConversations = await allConvResponse.json();
+      
+      // Find existing 1-on-1 conversation with this recipient
+      let conversation = allConversations.find(conv => 
+        !conv.is_group && 
+        conv.participants.some(p => p.id === recipient.id)
+      );
+      
+      // If no existing conversation, create new one
+      if (!conversation) {
+        const convResponse = await fetch(`${API_URL}/conversations`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            participant_ids: [currentUser.id, recipient.id],
+            is_group: false,
+            name: null
+          })
+        });
+        
+        if (!convResponse.ok) continue;
+        conversation = await convResponse.json();
+      }
+      
+      // Send the shared file/image to the existing or new conversation
+      const msgResponse = await fetch(`${API_URL}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          conversation_id: conversation.id,
+          content: currentShareMessage.content,
+          message_type: currentShareMessage.message_type,
+          file_url: currentShareMessage.file_url,
+          file_name: currentShareMessage.file_name,
+          file_size: currentShareMessage.file_size
+        })
+      });
+      
+      if (!msgResponse.ok) {
+        console.error('Failed to share to', recipient.display_name);
+      }
+    }
+    
+    // Close modal
+    closeShareModal();
+    
+    // Reload conversations to refresh the list
+    await loadConversationsList();
+    
+    alert(`Đã chia sẻ thành công cho ${selectedRecipients.length} người!`);
+    
+  } catch (error) {
+    console.error('Error sharing file:', error);
+    alert('Không thể chia sẻ file: ' + error.message);
+  }
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
   // Create group button
@@ -1147,6 +1420,32 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         closeCreateGroupModal();
+      }
+    });
+  }
+  
+  // Share modal event listeners
+  const btnShareSubmit = document.getElementById('btnShareSubmit');
+  if (btnShareSubmit) {
+    btnShareSubmit.addEventListener('click', shareFile);
+  }
+  
+  const shareSearchInput = document.getElementById('shareSearchInput');
+  if (shareSearchInput) {
+    let shareSearchTimeout;
+    shareSearchInput.addEventListener('input', (e) => {
+      clearTimeout(shareSearchTimeout);
+      shareSearchTimeout = setTimeout(() => {
+        searchShareRecipients(e.target.value);
+      }, 300);
+    });
+  }
+  
+  const shareModal = document.getElementById('shareModal');
+  if (shareModal) {
+    shareModal.addEventListener('click', (e) => {
+      if (e.target === shareModal) {
+        closeShareModal();
       }
     });
   }
