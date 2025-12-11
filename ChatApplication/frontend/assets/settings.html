@@ -51,7 +51,7 @@
           <span class="material-icons">help</span>
           <span>Help Center</span>
         </a>
-        <a href="../index.html" class="nav-item logout">
+        <a href="../index.html" class="nav-item logout" id="btnLogout">
           <span class="material-icons">logout</span>
           <span>Log Out</span>
         </a>
@@ -74,7 +74,7 @@
               <p class="bio" id="profileBio">"Welcome to ChatApp"</p>
             </div>
           </div>
-          <button class="btn-secondary">Edit Profile</button>
+          <button class="btn-secondary" id="btnEditProfile">Edit Profile</button>
         </div>
 
         <!-- Account Information -->
@@ -97,13 +97,19 @@
                 <input type="email" placeholder="your@email.com" id="inputEmail" readonly />
               </div>
               <div class="form-group">
-                <label>Password</label>
-                <input type="password" placeholder="••••••••••" readonly />
+                <label>Phone Number</label>
+                <input type="text" placeholder="Your phone number" id="inputPhone" readonly />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label>Bio</label>
+                <textarea placeholder="Tell us about yourself..." id="inputBio" rows="3"></textarea>
               </div>
             </div>
             <div class="form-actions">
-              <button type="button" class="btn-text">Cancel</button>
-              <button type="submit" class="btn-primary">Save Changes</button>
+              <button type="button" class="btn-text" onclick="window.location.href='chat.html'">Cancel</button>
+              <button type="submit" class="btn-primary" id="btnSaveChanges">Save Changes</button>
             </div>
           </form>
         </section>

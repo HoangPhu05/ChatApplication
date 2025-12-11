@@ -361,6 +361,39 @@ function openChat(user, conversation) {
   }
 }
 
+// Open group chat
+function openGroupChat(conversation) {
+  currentChatUser = null;
+  currentConversationId = conversation?.id || null;
+  
+  const normalChat = document.getElementById('normal-chat');
+  const cloudChat = document.getElementById('cloud-chat');
+  const emptyState = document.querySelector('.empty-state');
+  
+  if (emptyState) emptyState.style.display = 'none';
+  if (cloudChat) cloudChat.style.display = 'none';
+  if (normalChat) normalChat.style.display = 'flex';
+  
+  // Update chat header for group
+  document.getElementById('chatName').textContent = conversation.name || 'Nhóm chat';
+  document.getElementById('chatAvatar').textContent = (conversation.name || 'G').charAt(0).toUpperCase();
+  document.getElementById('chatStatus').textContent = `${conversation.participants?.length || 0} thành viên`;
+  
+  // Load messages
+  loadMessages(conversation?.id);
+  
+  // Start auto-refresh for new messages (every 3 seconds)
+  if (messageRefreshInterval) {
+    clearInterval(messageRefreshInterval);
+  }
+  
+  if (conversation?.id) {
+    messageRefreshInterval = setInterval(() => {
+      refreshMessages(conversation.id);
+    }, 3000);
+  }
+}
+
 // Load messages for a conversation
 async function loadMessages(conversationId) {
   const container = document.getElementById('messagesContainer');
@@ -428,7 +461,89 @@ function createMessageElement(msg, isSent) {
   
   const bubble = document.createElement('div');
   bubble.className = 'message-bubble';
-  bubble.textContent = msg.content || msg.message_text;
+  
+  // Check if message has file/image
+  const messageType = msg.message_type || 'text';
+  const fileUrl = msg.file_url;
+  
+  if (messageType === 'image' && fileUrl) {
+    // Display image with Zalo-style preview
+    const imgContainer = document.createElement('div');
+    imgContainer.style.cssText = 'position: relative; max-width: 400px; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);';
+    
+    // HD badge
+    const hdBadge = document.createElement('div');
+    hdBadge.textContent = 'HD';
+    hdBadge.style.cssText = 'position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; z-index: 1;';
+    imgContainer.appendChild(hdBadge);
+    
+    const img = document.createElement('img');
+    img.src = `http://localhost:8000${fileUrl}`;
+    img.alt = msg.content || 'Image';
+    img.style.cssText = 'width: 100%; height: auto; display: block;';
+    img.onerror = function() {
+      this.style.display = 'none';
+      imgContainer.innerHTML = `<div style="padding: 20px; text-align: center; background: rgba(255,0,0,0.1);">❌ Không thể tải ảnh</div>`;
+    };
+    img.onclick = () => window.open(img.src, '_blank');
+    
+    imgContainer.appendChild(img);
+    bubble.appendChild(imgContainer);
+    bubble.style.padding = '0';
+    bubble.style.background = 'transparent';
+  } else if (messageType === 'file' && fileUrl) {
+    // Display file card like Zalo
+    const fileCard = document.createElement('div');
+    fileCard.style.cssText = 'cursor: pointer; user-select: none;';
+    
+    const fileName = msg.content.replace('Sent a file: ', '');
+    const fileExt = fileName.split('.').pop().toUpperCase();
+    const fileSizeText = msg.file_size ? formatFileSize(msg.file_size) : '0 KB';
+    
+    // Determine icon and color based on file type
+    let iconBg = '#4285F4';
+    let iconText = 'W';
+    if (['DOC', 'DOCX'].includes(fileExt)) {
+      iconBg = '#2B579A';
+      iconText = 'W';
+    } else if (['XLS', 'XLSX'].includes(fileExt)) {
+      iconBg = '#217346';
+      iconText = 'X';
+    } else if (['PDF'].includes(fileExt)) {
+      iconBg = '#D32F2F';
+      iconText = 'P';
+    } else if (['PPT', 'PPTX'].includes(fileExt)) {
+      iconBg = '#D24726';
+      iconText = 'P';
+    }
+    
+    fileCard.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: ${isSent ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)'}; border-radius: 12px; min-width: 280px; max-width: 350px;">
+        <div style="width: 48px; height: 48px; background: ${iconBg}; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; flex-shrink: 0;">
+          ${iconText}
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px;">${fileName}</div>
+          <div style="font-size: 12px; opacity: 0.7; display: flex; align-items: center; gap: 6px;">
+            <span>${fileSizeText}</span>
+            <span>☁️</span>
+            <span>Đã có trên Cloud</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-shrink: 0;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 16px;">💬</div>
+          <a href="http://localhost:8000${fileUrl}" download="${fileName}" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px;">📥</a>
+        </div>
+      </div>
+    `;
+    
+    bubble.appendChild(fileCard);
+    bubble.style.padding = '0';
+    bubble.style.background = 'transparent';
+  } else {
+    // Regular text message
+    bubble.textContent = msg.content || msg.message_text;
+  }
   
   const time = document.createElement('div');
   time.className = 'message-time';
@@ -443,6 +558,14 @@ function createMessageElement(msg, isSent) {
   return messageDiv;
 }
 
+// Format file size helper
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+}
+
 // Format timestamp
 function formatTime(timestamp) {
   const date = new Date(timestamp);
@@ -451,6 +574,8 @@ function formatTime(timestamp) {
 
 // Send message
 async function sendMessage(content, type = 'text', fileUrl = null) {
+  console.log('sendMessage called:', { content, type, fileUrl });
+  
   if (!currentConversationId) {
     // Create new conversation first
     await createConversation();
@@ -460,6 +585,14 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
   
   try {
     const token = localStorage.getItem('token');
+    const messageData = {
+      conversation_id: currentConversationId,
+      content: content,
+      message_type: type,
+      file_url: fileUrl
+    };
+    console.log('Sending message data:', messageData);
+    
     const response = await fetch(`${API_URL}/messages`, {
       method: 'POST',
       headers: {
@@ -469,15 +602,19 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
       body: JSON.stringify({
         conversation_id: currentConversationId,
         content: content,
-        message_type: type
+        message_type: type,
+        file_url: fileUrl
       })
     });
     
     if (response.ok) {
       const newMessage = await response.json();
+      console.log('Message sent successfully:', newMessage);
       addMessageToUI(newMessage, true);
       document.getElementById('messageInput').value = '';
     } else {
+      const errorText = await response.text();
+      console.error('Failed to send message:', errorText);
       alert('Failed to send message');
     }
   } catch (error) {
@@ -627,8 +764,17 @@ async function uploadAndSendFile(file, type) {
     
     if (response.ok) {
       const result = await response.json();
-      await sendMessage(`Sent a ${type}: ${file.name}`, type, result.file_url);
+      console.log('Upload result:', result);
+      const content = type === 'image' ? file.name : `Sent a file: ${file.name}`;
+      console.log('Sending message with file_url:', result.file_url);
+      await sendMessage(content, type, result.file_url);
+      
+      // Reset file input
+      const fileInput = type === 'image' ? document.getElementById('imageInput') : document.getElementById('fileInput');
+      if (fileInput) fileInput.value = '';
     } else {
+      const errorText = await response.text();
+      console.error('Upload failed:', errorText);
       alert('Failed to upload file');
     }
   } catch (error) {
@@ -694,27 +840,50 @@ async function loadConversationsList() {
       
       chatList.innerHTML = ''; // Clear existing
       
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      
       conversations.forEach(conv => {
         const chatItem = document.createElement('div');
         chatItem.className = 'chat-item';
         
-        const otherUser = conv.participants?.find(p => p.id !== JSON.parse(localStorage.getItem('user')).id) || {};
+        let displayName = '';
+        let avatarText = 'G';
+        let statusText = 'Online';
+        
+        if (conv.is_group) {
+          // Group conversation
+          displayName = conv.name || 'Nhóm chat';
+          avatarText = displayName.charAt(0).toUpperCase();
+          statusText = `${conv.participants?.length || 0} thành viên`;
+        } else {
+          // 1-on-1 conversation
+          const otherUser = conv.participants?.find(p => p.id !== currentUser.id) || {};
+          displayName = otherUser.display_name || otherUser.username || 'User';
+          avatarText = displayName.charAt(0).toUpperCase();
+          statusText = 'Online';
+        }
         
         chatItem.innerHTML = `
-          <div class="avatar online">${(otherUser.display_name || otherUser.username || 'U').charAt(0).toUpperCase()}</div>
+          <div class="avatar ${conv.is_group ? '' : 'online'}">${avatarText}</div>
           <div class="chat-info">
             <div class="chat-header">
-              <h4>${otherUser.display_name || otherUser.username || 'User'}</h4>
+              <h4>${displayName}</h4>
               <span class="time">Mới</span>
             </div>
-            <p class="last-message">Bắt đầu cuộc trò chuyện...</p>
+            <p class="last-message">${conv.is_group ? statusText : 'Bắt đầu cuộc trò chuyện...'}</p>
           </div>
         `;
         
         chatItem.addEventListener('click', () => {
           document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
           chatItem.classList.add('active');
-          openChat(otherUser, conv);
+          
+          if (conv.is_group) {
+            openGroupChat(conv);
+          } else {
+            const otherUser = conv.participants?.find(p => p.id !== currentUser.id) || {};
+            openChat(otherUser, conv);
+          }
         });
         
         chatList.appendChild(chatItem);
@@ -749,3 +918,234 @@ if (document.readyState === 'loading') {
 } else {
   startConversationsAutoReload();
 }
+
+// ============= CREATE GROUP FUNCTIONALITY =============
+
+let selectedGroupMembers = [];
+
+// Open create group modal
+function openCreateGroupModal() {
+  const modal = document.getElementById('createGroupModal');
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  selectedGroupMembers = [];
+  updateSelectedMembersDisplay();
+  document.getElementById('groupNameInput').value = '';
+  document.getElementById('groupMemberSearch').value = '';
+  document.getElementById('groupSearchResults').innerHTML = '';
+}
+
+// Close create group modal
+function closeCreateGroupModal() {
+  const modal = document.getElementById('createGroupModal');
+  modal.classList.remove('active');
+  modal.style.display = 'none';
+  selectedGroupMembers = [];
+}
+
+// Update selected members display
+function updateSelectedMembersDisplay() {
+  const container = document.getElementById('selectedMembers');
+  
+  if (selectedGroupMembers.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">Chưa chọn thành viên nào</p>';
+  } else {
+    container.innerHTML = selectedGroupMembers.map(member => `
+      <div class="member-tag">
+        <span>${member.display_name}</span>
+        <button class="remove-member" onclick="removeMember(${member.id})">
+          <span class="material-icons" style="font-size: 16px;">close</span>
+        </button>
+      </div>
+    `).join('');
+  }
+  
+  // Update button state
+  const createBtn = document.getElementById('btnCreateGroupSubmit');
+  if (selectedGroupMembers.length < 2) {
+    createBtn.disabled = true;
+    createBtn.title = 'Cần ít nhất 3 người (bạn + 2 người khác)';
+  } else {
+    createBtn.disabled = false;
+    createBtn.title = '';
+  }
+}
+
+// Remove member from selection
+function removeMember(userId) {
+  selectedGroupMembers = selectedGroupMembers.filter(m => m.id !== userId);
+  updateSelectedMembersDisplay();
+  
+  // Update search results to reflect deselection
+  const resultItem = document.querySelector(`.search-result-item[data-user-id="${userId}"]`);
+  if (resultItem) {
+    resultItem.classList.remove('selected');
+  }
+}
+
+// Toggle member selection
+function toggleMemberSelection(user) {
+  const index = selectedGroupMembers.findIndex(m => m.id === user.id);
+  
+  if (index === -1) {
+    // Add member
+    selectedGroupMembers.push(user);
+  } else {
+    // Remove member
+    selectedGroupMembers.splice(index, 1);
+  }
+  
+  updateSelectedMembersDisplay();
+}
+
+// Handle member click from search results
+function handleMemberClick(element) {
+  const userData = element.getAttribute('data-user');
+  const user = JSON.parse(userData);
+  toggleMemberSelection(user);
+  element.classList.toggle('selected');
+}
+
+// Search for group members
+async function searchGroupMembers(query) {
+  const resultsDiv = document.getElementById('groupSearchResults');
+  
+  if (!query.trim()) {
+    resultsDiv.innerHTML = '';
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/users?query=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Search failed');
+    
+    const users = await response.json();
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+    // Filter out current user
+    const filteredUsers = users.filter(u => u.id !== currentUser.id);
+    
+    if (filteredUsers.length === 0) {
+      resultsDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Không tìm thấy người dùng</p>';
+      return;
+    }
+    
+    resultsDiv.innerHTML = filteredUsers.map(user => {
+      const isSelected = selectedGroupMembers.some(m => m.id === user.id);
+      const userJson = JSON.stringify(user);
+      return `
+        <div class="search-result-item ${isSelected ? 'selected' : ''}" data-user-id="${user.id}" data-user='${userJson.replace(/'/g, "&apos;")}' onclick="handleMemberClick(this)">
+          <div class="avatar">${user.display_name.charAt(0).toUpperCase()}</div>
+          <div class="search-result-info">
+            <div class="name">${user.display_name}</div>
+            <div class="phone">${user.phone || user.email}</div>
+          </div>
+          ${isSelected ? '<span class="material-icons" style="color: var(--accent);">check_circle</span>' : ''}
+        </div>
+      `;
+    }).join('');
+    
+  } catch (error) {
+    console.error('Error searching members:', error);
+    resultsDiv.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">Lỗi tìm kiếm</p>';
+  }
+}
+
+// Create group
+async function createGroup() {
+  const groupName = document.getElementById('groupNameInput').value.trim();
+  
+  if (!groupName) {
+    alert('Vui lòng nhập tên nhóm!');
+    return;
+  }
+  
+  if (selectedGroupMembers.length < 2) {
+    alert('Vui lòng chọn ít nhất 2 thành viên khác (tổng cộng tối thiểu 3 người)!');
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+    // Include current user + selected members
+    const participantIds = [currentUser.id, ...selectedGroupMembers.map(m => m.id)];
+    
+    const response = await fetch(`${API_URL}/conversations/group`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: groupName,
+        participant_ids: participantIds,
+        is_group: true
+      })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to create group');
+    }
+    
+    const group = await response.json();
+    console.log('Group created:', group);
+    
+    // Close modal
+    closeCreateGroupModal();
+    
+    // Reload conversations
+    await loadConversationsList();
+    
+    alert(`Đã tạo nhóm "${groupName}" thành công!`);
+    
+  } catch (error) {
+    console.error('Error creating group:', error);
+    alert('Không thể tạo nhóm: ' + error.message);
+  }
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  // Create group button
+  const btnCreateGroup = document.getElementById('btnCreateGroup');
+  if (btnCreateGroup) {
+    btnCreateGroup.addEventListener('click', openCreateGroupModal);
+  }
+  
+  // Create group submit button
+  const btnCreateGroupSubmit = document.getElementById('btnCreateGroupSubmit');
+  if (btnCreateGroupSubmit) {
+    btnCreateGroupSubmit.addEventListener('click', createGroup);
+  }
+  
+  // Group member search
+  const groupMemberSearch = document.getElementById('groupMemberSearch');
+  if (groupMemberSearch) {
+    let searchTimeout;
+    groupMemberSearch.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchGroupMembers(e.target.value);
+      }, 300);
+    });
+  }
+  
+  // Close modal on background click
+  const modal = document.getElementById('createGroupModal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeCreateGroupModal();
+      }
+    });
+  }
+});

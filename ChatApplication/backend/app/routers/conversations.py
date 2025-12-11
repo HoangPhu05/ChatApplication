@@ -31,6 +31,50 @@ async def create_conversation(
     db.refresh(conversation)
     return conversation
 
+@router.post("/group", response_model=ConversationResponse, status_code=status.HTTP_201_CREATED)
+async def create_group_conversation(
+    conversation_data: ConversationCreate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a group conversation with minimum 3 participants"""
+    # Validate minimum participants (must include current user + at least 2 others)
+    if len(conversation_data.participant_ids) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Group conversation requires at least 3 participants"
+        )
+    
+    # Validate group name
+    if not conversation_data.name or not conversation_data.name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Group name is required"
+        )
+    
+    # Create group conversation
+    conversation = models.Conversation(
+        name=conversation_data.name,
+        is_group=True
+    )
+    db.add(conversation)
+    db.flush()
+    
+    # Add all participants
+    participants = db.query(models.User).filter(
+        models.User.id.in_(conversation_data.participant_ids)
+    ).all()
+    
+    # Ensure current user is included
+    if current_user not in participants:
+        participants.append(current_user)
+    
+    conversation.participants.extend(participants)
+    
+    db.commit()
+    db.refresh(conversation)
+    return conversation
+
 @router.get("/", response_model=List[ConversationWithParticipants])
 async def get_user_conversations(
     current_user: models.User = Depends(get_current_user),

@@ -238,8 +238,26 @@
   transition: border-color 0.2s;
 }
 
-.form-group input:focus {
+.form-group textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
   border-color: var(--accent);
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
 }
 
 .form-actions {

@@ -26,8 +26,8 @@
 					<span class="status">Online</span>
 				</div>
 			</div>
-			<button class="btn-icon" title="Settings">
-				<span class="material-icons">edit</span>
+			<button class="btn-icon" id="btnSettings" title="Settings" onclick="window.location.href='settings.html'">
+				<span class="material-icons">settings</span>
 			</button>
 		</div>
 
@@ -36,10 +36,10 @@
 				<span class="material-icons">search</span>
 				<input type="text" placeholder="Search or start new chat" />
 			</div>
-			<button class="btn-icon" title="Add friend">
+			<button class="btn-icon" id="btnAddFriend" title="Add friend">
 				<span class="material-icons">person_add</span>
 			</button>
-			<button class="btn-icon" title="Create group">
+			<button class="btn-icon" id="btnCreateGroup" title="Create group">
 				<span class="material-icons">group_add</span>
 			</button>
 		</div>
@@ -237,6 +237,46 @@
 			</div>
 		</div>
 	</main>
+</div>
+
+<!-- Create Group Modal -->
+<div id="createGroupModal" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h2>Tạo nhóm chat</h2>
+			<button class="btn-close" onclick="closeCreateGroupModal()">
+				<span class="material-icons">close</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label>Tên nhóm</label>
+				<input type="text" id="groupNameInput" placeholder="Nhập tên nhóm..." />
+			</div>
+			
+			<div class="form-group">
+				<label>Tìm kiếm thành viên (tối thiểu 3 người)</label>
+				<div class="search-box">
+					<span class="material-icons">search</span>
+					<input type="text" id="groupMemberSearch" placeholder="Nhập tên hoặc số điện thoại..." />
+				</div>
+			</div>
+
+			<!-- Selected Members -->
+			<div id="selectedMembers" class="selected-members">
+				<!-- Selected members will appear here -->
+			</div>
+
+			<!-- Search Results -->
+			<div id="groupSearchResults" class="search-results">
+				<!-- Search results will appear here -->
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn-secondary" onclick="closeCreateGroupModal()">Hủy</button>
+			<button class="btn-primary" id="btnCreateGroupSubmit">Tạo nhóm</button>
+		</div>
+	</div>
 </div>
 
 <script src="js/script.js"></script>

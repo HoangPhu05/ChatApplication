@@ -1,11 +1,61 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
+import os
+import uuid
+from pathlib import Path
 from app.core.deps import get_db, get_current_user
 from app.database import models
 from app.schemas.cloud import CloudFileCreate, CloudFileResponse
 
 router = APIRouter()
+
+# Create uploads directory
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
+@router.post("/upload")
+async def upload_file_endpoint(
+    file: UploadFile = File(...),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Upload a file and return its URL"""
+    try:
+        # Generate unique filename
+        file_extension = os.path.splitext(file.filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = UPLOAD_DIR / unique_filename
+        
+        # Save file
+        contents = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(contents)
+        
+        # Determine file type
+        file_type = "image" if file.content_type and file.content_type.startswith("image/") else "file"
+        
+        # Save to database
+        cloud_file = models.CloudFile(
+            owner_id=current_user.id,
+            file_name=file.filename,
+            file_url=f"/uploads/{unique_filename}",
+            file_type=file_type,
+            file_size=len(contents)
+        )
+        db.add(cloud_file)
+        db.commit()
+        db.refresh(cloud_file)
+        
+        return {
+            "file_url": cloud_file.file_url,
+            "file_name": file.filename,
+            "file_type": file_type,
+            "file_size": len(contents)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
 
 @router.post("/", response_model=CloudFileResponse, status_code=status.HTTP_201_CREATED)
 async def upload_file(
