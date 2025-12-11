@@ -492,13 +492,12 @@ function createMessageElement(msg, isSent) {
     bubble.style.padding = '0';
     bubble.style.background = 'transparent';
   } else if (messageType === 'file' && fileUrl) {
-    // Display file card like Zalo
+    // Display file card - simple and clean design
     const fileCard = document.createElement('div');
     fileCard.style.cssText = 'cursor: pointer; user-select: none;';
     
     const fileName = msg.content.replace('Sent a file: ', '');
     const fileExt = fileName.split('.').pop().toUpperCase();
-    const fileSizeText = msg.file_size ? formatFileSize(msg.file_size) : '0 KB';
     
     // Determine icon and color based on file type
     let iconBg = '#4285F4';
@@ -515,26 +514,29 @@ function createMessageElement(msg, isSent) {
     } else if (['PPT', 'PPTX'].includes(fileExt)) {
       iconBg = '#D24726';
       iconText = 'P';
+    } else if (['TXT', 'LOG'].includes(fileExt)) {
+      iconBg = '#5F6368';
+      iconText = 'T';
+    } else {
+      iconBg = '#4285F4';
+      iconText = 'F';
     }
     
     fileCard.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: ${isSent ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)'}; border-radius: 12px; min-width: 280px; max-width: 350px;">
-        <div style="width: 48px; height: 48px; background: ${iconBg}; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; flex-shrink: 0;">
-          ${iconText}
-        </div>
-        <div style="flex: 1; min-width: 0;">
-          <div style="font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px;">${fileName}</div>
-          <div style="font-size: 12px; opacity: 0.7; display: flex; align-items: center; gap: 6px;">
-            <span>${fileSizeText}</span>
-            <span>☁️</span>
-            <span>Đã có trên Cloud</span>
+      <a href="http://localhost:8000${fileUrl}" download="${fileName}" style="text-decoration: none; color: inherit; display: block;">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 4px 10px; background: ${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}; border-radius: 8px; max-width: 280px; transition: all 0.2s ease; border: 1px solid ${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'};" onmouseover="this.style.background='${isSent ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'}'" onmouseout="this.style.background='${isSent ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}'">
+          <div style="width: 28px; height: 28px; background: ${iconBg}; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+            ${iconText}
+          </div>
+          <div style="flex: 1; min-width: 0; line-height: 1.2;">
+            <div style="font-weight: 600; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${isSent ? 'white' : 'var(--text)'};">${fileName}</div>
+            <div style="font-size: 10px; opacity: 0.7; margin-top: 1px; color: ${isSent ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)'};">${fileExt}</div>
+          </div>
+          <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <span style="font-size: 13px;">📥</span>
           </div>
         </div>
-        <div style="display: flex; gap: 8px; flex-shrink: 0;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 16px;">💬</div>
-          <a href="http://localhost:8000${fileUrl}" download="${fileName}" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px;">📥</a>
-        </div>
-      </div>
+      </a>
     `;
     
     bubble.appendChild(fileCard);
