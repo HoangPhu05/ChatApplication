@@ -70,7 +70,7 @@
 					</div>
 				</div>
 				<div class="chat-header-actions">
-					<button class="btn-icon" title="Search"><span class="material-icons">search</span></button>
+					<button class="btn-icon" id="btnSearchMessages" title="Search"><span class="material-icons">search</span></button>
 					<button class="btn-icon" title="Call"><span class="material-icons">call</span></button>
 					<button class="btn-icon" title="Video Call"><span class="material-icons">videocam</span></button>
 					<button class="btn-icon" title="Info"><span class="material-icons">info</span></button>
@@ -80,6 +80,30 @@
 			<!-- Messages Area -->
 			<div class="messages-container" id="messagesContainer">
 				<!-- Messages will be inserted here -->
+			</div>
+
+			<!-- Search Panel (Hidden by default) -->
+			<div class="search-panel" id="searchPanel" style="display: none;">
+				<div class="search-panel-header">
+					<h3>Tìm kiếm tin nhắn</h3>
+					<button class="btn-icon" id="btnCloseSearch" title="Close">
+						<span class="material-icons">close</span>
+					</button>
+				</div>
+				
+				<div class="search-panel-input">
+					<div class="search-box">
+						<span class="material-icons">search</span>
+						<input type="text" id="searchInput" placeholder="Tìm kiếm tin nhắn..." />
+					</div>
+				</div>
+
+				<div class="search-results-container" id="searchResultsContainer">
+					<div class="search-empty">
+						<span class="material-icons">search</span>
+						<p>Nhập từ khóa để tìm kiếm tin nhắn</p>
+					</div>
+				</div>
 			</div>
 
 			<!-- Input Area -->

@@ -414,6 +414,7 @@ async function loadMessages(conversationId) {
     
     if (response.ok) {
       const messages = await response.json();
+      allMessages = messages; // Cache messages for search
       displayMessages(messages);
     } else {
       container.innerHTML = '<div class="error">Failed to load messages</div>';
@@ -451,6 +452,7 @@ function displayMessages(messages) {
 function createMessageElement(msg, isSent) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+  messageDiv.setAttribute('data-message-id', msg.id); // Add message ID for search scroll
   
   const avatar = document.createElement('div');
   avatar.className = 'message-avatar';
@@ -717,6 +719,50 @@ document.addEventListener('DOMContentLoaded', () => {
           sendMessage(content);
         }
       }
+    });
+  }
+  
+  // Search messages panel toggle
+  const btnSearchMessages = document.getElementById('btnSearchMessages');
+  const btnCloseSearch = document.getElementById('btnCloseSearch');
+  const searchPanel = document.getElementById('searchPanel');
+  const chatView = document.getElementById('normal-chat');
+  const searchInputPanel = document.getElementById('searchInput');
+  const searchResultsContainer = document.getElementById('searchResultsContainer');
+  
+  if (btnSearchMessages && searchPanel) {
+    btnSearchMessages.addEventListener('click', () => {
+      searchPanel.style.display = 'flex';
+      chatView.classList.add('with-search');
+      if (searchInputPanel) searchInputPanel.focus();
+    });
+  }
+  
+  if (btnCloseSearch && searchPanel) {
+    btnCloseSearch.addEventListener('click', () => {
+      searchPanel.style.display = 'none';
+      chatView.classList.remove('with-search');
+      if (searchInputPanel) searchInputPanel.value = '';
+      showEmptySearchState();
+    });
+  }
+  
+  // Search input handler
+  if (searchInputPanel) {
+    let searchTimeout;
+    searchInputPanel.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim();
+      
+      if (!query) {
+        showEmptySearchState();
+        return;
+      }
+      
+      // Debounce search
+      searchTimeout = setTimeout(() => {
+        searchMessages(query);
+      }, 300);
     });
   }
   
@@ -1374,13 +1420,16 @@ async function shareFile() {
       }
     }
     
+    // Save count before closing modal
+    const recipientCount = selectedRecipients.length;
+    
     // Close modal
     closeShareModal();
     
     // Reload conversations to refresh the list
     await loadConversationsList();
     
-    alert(`Đã chia sẻ thành công cho ${selectedRecipients.length} người!`);
+    alert(`Đã chia sẻ thành công cho ${recipientCount} người!`);
     
   } catch (error) {
     console.error('Error sharing file:', error);
@@ -1450,3 +1499,104 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ========== MESSAGE SEARCH FUNCTIONS ==========
+
+let allMessages = []; // Cache all messages for search
+
+// Show empty search state
+function showEmptySearchState() {
+  const searchResultsContainer = document.getElementById('searchResultsContainer');
+  if (!searchResultsContainer) return;
+  
+  searchResultsContainer.innerHTML = `
+    <div class="search-empty">
+      <span class="material-icons">search</span>
+      <p>Nhập từ khóa để tìm kiếm tin nhắn</p>
+    </div>
+  `;
+}
+
+// Search messages function
+function searchMessages(query) {
+  const searchResultsContainer = document.getElementById('searchResultsContainer');
+  if (!searchResultsContainer) return;
+  
+  // Filter messages that contain the search query
+  const results = allMessages.filter(msg => {
+    if (!msg.content) return false;
+    return msg.content.toLowerCase().includes(query.toLowerCase());
+  });
+  
+  if (results.length === 0) {
+    searchResultsContainer.innerHTML = `
+      <div class="no-results">
+        <span class="material-icons">search_off</span>
+        <p>Không tìm thấy tin nhắn nào</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Display results
+  searchResultsContainer.innerHTML = results.map(msg => {
+    const content = highlightText(msg.content, query);
+    const date = formatMessageDate(msg.created_at);
+    const senderName = msg.sender_username || 'Unknown';
+    
+    return `
+      <div class="search-result-item" onclick="scrollToMessage(${msg.id})">
+        <div class="search-result-sender">${senderName}</div>
+        <div class="search-result-date">${date}</div>
+        <div class="search-result-content">${content}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Highlight search text
+function highlightText(text, query) {
+  if (!query) return text;
+  const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+  return text.replace(regex, '<mark>$1</mark>');
+}
+
+// Escape regex special characters
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Format message date for search results
+function formatMessageDate(timestamp) {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now - date;
+  
+  // If today, show time
+  if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  }
+  
+  // If within a week, show day name
+  if (diff < 7 * 24 * 60 * 60 * 1000) {
+    const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    return days[date.getDay()];
+  }
+  
+  // Otherwise, show date
+  return date.toLocaleDateString('vi-VN');
+}
+
+// Scroll to specific message
+function scrollToMessage(messageId) {
+  const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+  if (messageElement) {
+    messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Highlight the message briefly
+    messageElement.style.background = 'rgba(26, 115, 232, 0.1)';
+    setTimeout(() => {
+      messageElement.style.background = '';
+    }, 2000);
+  }
+}

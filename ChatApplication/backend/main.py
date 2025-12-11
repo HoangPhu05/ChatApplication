@@ -10,13 +10,15 @@ app = FastAPI(
     debug=settings.DEBUG
 )
 
-# CORS middleware
+# CORS middleware - Edge compatible
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Cho phép tất cả origins trong development
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
 # Mount uploads directory for static file serving
