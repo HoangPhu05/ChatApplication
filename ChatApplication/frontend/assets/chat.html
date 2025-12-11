@@ -69,15 +69,13 @@
 						<span id="chatStatus">Online</span>
 					</div>
 				</div>
-				<div class="chat-header-actions">
-					<button class="btn-icon" id="btnSearchMessages" title="Search"><span class="material-icons">search</span></button>
-					<button class="btn-icon" title="Call"><span class="material-icons">call</span></button>
-					<button class="btn-icon" title="Video Call"><span class="material-icons">videocam</span></button>
-					<button class="btn-icon" title="Info"><span class="material-icons">info</span></button>
-				</div>
+			<div class="chat-header-actions">
+				<button class="btn-icon" id="btnSearchMessages" title="Search"><span class="material-icons">search</span></button>
+				<button class="btn-icon" title="Call"><span class="material-icons">call</span></button>
+				<button class="btn-icon" title="Video Call"><span class="material-icons">videocam</span></button>
+				<button class="btn-icon" id="btnToggleInfo" title="Info"><span class="material-icons">info</span></button>
 			</div>
-
-			<!-- Messages Area -->
+		</div>			<!-- Messages Area -->
 			<div class="messages-container" id="messagesContainer">
 				<!-- Messages will be inserted here -->
 			</div>
@@ -176,7 +174,63 @@
 			</div>
 		</div>
 
-		<!-- Cloud Storage View (Hidden by default) -->
+		<!-- Info Panel (Hidden by default) -->
+		<div class="info-panel" id="infoPanel" style="display: none;">
+			<div class="info-panel-header">
+				<h3>Thông tin hội thoại</h3>
+				<button class="btn-icon" id="btnCloseInfo" title="Close">
+					<span class="material-icons">close</span>
+				</button>
+			</div>
+
+			<div class="info-panel-content">
+				<!-- User Info Section -->
+				<div class="info-section">
+					<div class="info-user-avatar" id="infoUserAvatar">U</div>
+					<h2 id="infoUserName">User Name</h2>
+					<p id="infoUserStatus">Online</p>
+			<div class="info-actions">
+				<button class="info-action-btn" id="btnPinConversation">
+					<span class="material-icons">push_pin</span>
+					<span>Ghim hội thoại</span>
+				</button>
+				<button class="info-action-btn" id="btnCreateGroupFromInfo">
+					<span class="material-icons">group_add</span>
+					<span>Tạo nhóm trò chuyện</span>
+				</button>
+				<button class="info-action-btn danger" id="btnLeaveGroup" style="display: none;">
+					<span class="material-icons">exit_to_app</span>
+					<span>Rời nhóm</span>
+				</button>
+			</div>
+		</div>
+
+		<!-- Media Section -->
+				<div class="info-section">
+					<div class="info-section-header">
+						<h4>Ảnh/Video</h4>
+						<button class="btn-text" id="btnViewAllMedia">Xem tất cả</button>
+					</div>
+					<div class="media-grid" id="mediaGrid">
+						<!-- Media items will be inserted here -->
+					</div>
+				</div>
+
+				<!-- Files Section -->
+				<div class="info-section">
+					<div class="info-section-header">
+						<h4>File</h4>
+						<button class="btn-text" id="btnViewAllFiles">Xem tất cả</button>
+					</div>
+					<div class="files-list" id="filesList">
+						<!-- File items will be inserted here -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Cloud Storage View (Hidden by default) -->
 		<div class="chat-view" id="cloud-chat" style="display: none;">
 			<!-- Cloud Files Timeline -->
 			<div class="cloud-timeline">
@@ -361,6 +415,14 @@
 	<div class="context-menu-item" id="contextDelete">
 		<span class="material-icons">delete</span>
 		<span>Thu hồi tin nhắn</span>
+	</div>
+</div>
+
+<!-- Context Menu for Chat Items -->
+<div class="message-context-menu" id="chatItemContextMenu" style="display: none;">
+	<div class="context-menu-item" id="contextDeleteConversation">
+		<span class="material-icons">delete</span>
+		<span>Xóa hội thoại</span>
 	</div>
 </div>
 

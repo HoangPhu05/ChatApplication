@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.deps import get_db, get_current_user
+from app.core.security import get_password_hash
 from app.database import models
-from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.user import UserResponse, UserUpdate, ResetPassword
 
 router = APIRouter()
 
@@ -66,3 +67,22 @@ async def search_users(
     ).limit(20).all()
     
     return users
+
+@router.post("/reset-password")
+async def reset_password(
+    reset_data: ResetPassword,
+    db: Session = Depends(get_db)
+):
+    # Tìm user theo email
+    user = db.query(models.User).filter(models.User.email == reset_data.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Email không tồn tại trong hệ thống"
+        )
+    
+    # Cập nhật mật khẩu mới
+    user.password_hash = get_password_hash(reset_data.new_password)
+    db.commit()
+    
+    return {"message": "Đổi mật khẩu thành công"}

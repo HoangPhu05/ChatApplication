@@ -3,7 +3,31 @@ const API_URL = 'http://localhost:8000/api';
 
 // Helper function to show messages
 function showMessage(message, type = 'info') {
-  alert(message);
+  // Tạo toast notification
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  
+  // Icon theo type
+  let icon = 'info';
+  if (type === 'success') icon = 'check_circle';
+  else if (type === 'error') icon = 'error';
+  else if (type === 'warning') icon = 'warning';
+  
+  toast.innerHTML = `
+    <span class="material-icons">${icon}</span>
+    <span>${message}</span>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  // Hiện animation
+  setTimeout(() => toast.classList.add('show'), 10);
+  
+  // Tự động ẩn sau 3 giây
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
 // Common script for all auth pages

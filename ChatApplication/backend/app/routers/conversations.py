@@ -125,3 +125,36 @@ async def delete_conversation(
     db.delete(conversation)
     db.commit()
     return None
+
+@router.post("/{conversation_id}/leave", status_code=status.HTTP_200_OK)
+async def leave_group(
+    conversation_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Leave a group conversation"""
+    conversation = db.query(models.Conversation).filter(
+        models.Conversation.id == conversation_id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    if not conversation.is_group:
+        raise HTTPException(
+            status_code=400, 
+            detail="Cannot leave a 1-on-1 conversation"
+        )
+    
+    if current_user not in conversation.participants:
+        raise HTTPException(status_code=403, detail="You are not in this group")
+    
+    # Remove user from participants
+    conversation.participants.remove(current_user)
+    
+    # If no participants left, delete the conversation
+    if len(conversation.participants) == 0:
+        db.delete(conversation)
+    
+    db.commit()
+    return {"message": "Successfully left the group"}

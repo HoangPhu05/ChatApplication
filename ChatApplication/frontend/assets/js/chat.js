@@ -3,6 +3,30 @@
 
 console.log('========== CHAT.JS LOADED ==========');
 
+// Toast notification function
+function showMessage(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  
+  let icon = 'info';
+  if (type === 'success') icon = 'check_circle';
+  else if (type === 'error') icon = 'error';
+  else if (type === 'warning') icon = 'warning';
+  
+  toast.innerHTML = `
+    <span class="material-icons">${icon}</span>
+    <span>${message}</span>
+  `;
+  
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('========== DOM CONTENT LOADED ==========');
   
@@ -258,11 +282,11 @@ async function startChatWithUser(user) {
     // Add to chat list and open
     addChatToList(user, conversation);
     
-    alert(`Bắt đầu chat với ${user.display_name}!`);
+    showMessage(`Bắt đầu chat với ${user.display_name}!`, 'success');
     
   } catch (error) {
     console.error('Error starting chat:', error);
-    alert('Không thể bắt đầu cuộc trò chuyện. Vui lòng thử lại!');
+    showMessage('Không thể bắt đầu cuộc trò chuyện. Vui lòng thử lại!', 'error');
   }
 }
 
@@ -281,6 +305,7 @@ function addChatToList(user, conversation) {
   chatItem.className = 'chat-item';
   chatItem.dataset.userId = user.id;
   chatItem.dataset.conversationId = conversation.id;
+  chatItem.setAttribute('data-conversation-id', conversation.id);
   
   chatItem.innerHTML = `
     <div class="avatar ${user.is_online ? 'online' : ''}">
@@ -304,6 +329,12 @@ function addChatToList(user, conversation) {
     openChat(user, conversation);
   });
   
+  // Add right-click context menu handler
+  chatItem.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    showChatItemContextMenu(e, conversation.id);
+  });
+  
   chatItem.click();
 }
 
@@ -325,12 +356,14 @@ if (toggleInfoBtn && infoPanel && cloudTimeline) {
 
 // Chat functionality
 let currentChatUser = null;
+let currentConversation = null;
 let currentConversationId = null;
 let messageRefreshInterval = null;
 
 // Open chat with a user
 function openChat(user, conversation) {
   currentChatUser = user;
+  currentConversation = conversation;
   currentConversationId = conversation?.id || null;
   
   const normalChat = document.getElementById('normal-chat');
@@ -349,6 +382,12 @@ function openChat(user, conversation) {
   // Load messages
   loadMessages(conversation?.id);
   
+  // Update info panel if it's open
+  const infoPanel = document.getElementById('infoPanel');
+  if (infoPanel && infoPanel.style.display === 'flex') {
+    loadInfoPanelData();
+  }
+  
   // Start auto-refresh for new messages (every 3 seconds)
   if (messageRefreshInterval) {
     clearInterval(messageRefreshInterval);
@@ -364,6 +403,7 @@ function openChat(user, conversation) {
 // Open group chat
 function openGroupChat(conversation) {
   currentChatUser = null;
+  currentConversation = conversation;
   currentConversationId = conversation?.id || null;
   
   const normalChat = document.getElementById('normal-chat');
@@ -381,6 +421,12 @@ function openGroupChat(conversation) {
   
   // Load messages
   loadMessages(conversation?.id);
+  
+  // Update info panel if it's open
+  const infoPanel = document.getElementById('infoPanel');
+  if (infoPanel && infoPanel.style.display === 'flex') {
+    loadInfoPanelData();
+  }
   
   // Start auto-refresh for new messages (every 3 seconds)
   if (messageRefreshInterval) {
@@ -451,6 +497,148 @@ function displayMessages(messages) {
   requestAnimationFrame(() => {
     container.scrollTop = container.scrollHeight;
   });
+}
+
+// Load info panel data
+function loadInfoPanelData() {
+  if (!allMessages) return;
+  
+  const btnLeaveGroup = document.getElementById('btnLeaveGroup');
+  const btnCreateGroupFromInfo = document.getElementById('btnCreateGroupFromInfo');
+  
+  // Update info based on conversation type
+  if (currentConversation?.is_group) {
+    // Group conversation
+    document.getElementById('infoUserAvatar').textContent = (currentConversation.name || 'G').charAt(0).toUpperCase();
+    document.getElementById('infoUserName').textContent = currentConversation.name || 'Nhóm chat';
+    document.getElementById('infoUserStatus').textContent = `${currentConversation.participants?.length || 0} thành viên`;
+    
+    // Show leave group button, hide create group button
+    if (btnLeaveGroup) btnLeaveGroup.style.display = 'flex';
+    if (btnCreateGroupFromInfo) btnCreateGroupFromInfo.style.display = 'none';
+  } else if (currentChatUser) {
+    // 1-on-1 conversation
+    document.getElementById('infoUserAvatar').textContent = currentChatUser.display_name?.charAt(0) || 'U';
+    document.getElementById('infoUserName').textContent = currentChatUser.display_name || currentChatUser.username;
+    document.getElementById('infoUserStatus').textContent = currentChatUser.is_online ? 'Online' : 'Offline';
+    
+    // Hide leave group button, show create group button
+    if (btnLeaveGroup) btnLeaveGroup.style.display = 'none';
+    if (btnCreateGroupFromInfo) btnCreateGroupFromInfo.style.display = 'flex';
+  } else {
+    return;
+  }
+  
+  // Filter media (images) and files
+  const mediaMessages = allMessages.filter(msg => msg.message_type === 'image' && msg.file_url);
+  const fileMessages = allMessages.filter(msg => msg.message_type === 'file' && msg.file_url);
+  
+  // Load media grid
+  const mediaGrid = document.getElementById('mediaGrid');
+  mediaGrid.innerHTML = '';
+  
+  if (mediaMessages.length === 0) {
+    mediaGrid.innerHTML = '<div class="media-grid-empty">Chưa có ảnh/video nào</div>';
+  } else {
+    mediaMessages.slice(-9).reverse().forEach(msg => {
+      const mediaItem = document.createElement('div');
+      mediaItem.className = 'media-item';
+      mediaItem.innerHTML = `<img src="http://localhost:8000${msg.file_url}" alt="Image" />`;
+      mediaItem.onclick = () => window.open(`http://localhost:8000${msg.file_url}`, '_blank');
+      mediaGrid.appendChild(mediaItem);
+    });
+  }
+  
+  // Load files list
+  const filesList = document.getElementById('filesList');
+  filesList.innerHTML = '';
+  
+  if (fileMessages.length === 0) {
+    filesList.innerHTML = '<div class="files-list-empty">Chưa có file nào</div>';
+  } else {
+    fileMessages.slice(-10).reverse().forEach(msg => {
+      const fileName = msg.content.replace('Sent a file: ', '');
+      const fileExt = fileName.split('.').pop().toUpperCase();
+      
+      let iconBg = '#4285F4';
+      let iconText = 'F';
+      if (['DOC', 'DOCX'].includes(fileExt)) {
+        iconBg = '#2B579A';
+        iconText = 'W';
+      } else if (['XLS', 'XLSX'].includes(fileExt)) {
+        iconBg = '#217346';
+        iconText = 'X';
+      } else if (['PDF'].includes(fileExt)) {
+        iconBg = '#D32F2F';
+        iconText = 'P';
+      }
+      
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      fileItem.innerHTML = `
+        <div class="file-icon" style="background: ${iconBg}">${iconText}</div>
+        <div class="file-info">
+          <div class="file-name">${fileName}</div>
+          <div class="file-size">${fileExt}</div>
+        </div>
+      `;
+      fileItem.onclick = () => window.open(`http://localhost:8000${msg.file_url}`, '_blank');
+      filesList.appendChild(fileItem);
+    });
+  }
+}
+
+// Pin conversation to top
+function pinConversation() {
+  if (!currentConversationId || !currentChatUser) {
+    showMessage('Không có cuộc hội thoại nào để ghim!', 'warning');
+    return;
+  }
+  
+  const chatList = document.querySelector('.chat-list');
+  const currentChatItem = chatList.querySelector(`[data-conversation-id="${currentConversationId}"]`);
+  
+  if (!currentChatItem) {
+    showMessage('Không tìm thấy cuộc hội thoại!', 'error');
+    return;
+  }
+  
+  // Toggle pinned class
+  const isPinned = currentChatItem.classList.contains('pinned');
+  
+  if (isPinned) {
+    // Unpin
+    currentChatItem.classList.remove('pinned');
+    // Move back to original position (just after other pinned items)
+    const firstUnpinned = chatList.querySelector('.chat-item:not(.pinned)');
+    if (firstUnpinned && firstUnpinned !== currentChatItem) {
+      chatList.insertBefore(currentChatItem, firstUnpinned);
+    }
+    showMessage('Đã bỏ ghim cuộc hội thoại!', 'info');
+  } else {
+    // Pin to top
+    currentChatItem.classList.add('pinned');
+    // Move to top of list (after all pinned items)
+    const pinnedItems = chatList.querySelectorAll('.chat-item.pinned');
+    if (pinnedItems.length > 1) {
+      // Insert after last pinned item
+      const lastPinned = pinnedItems[pinnedItems.length - 2];
+      chatList.insertBefore(currentChatItem, lastPinned.nextSibling);
+    } else {
+      // First pinned item, move to very top
+      chatList.insertBefore(currentChatItem, chatList.firstChild);
+    }
+    showMessage('Đã ghim cuộc hội thoại lên đầu!', 'success');
+  }
+  
+  // Update button text
+  const btnPinConversation = document.getElementById('btnPinConversation');
+  if (btnPinConversation) {
+    const btnText = btnPinConversation.querySelector('span:last-child');
+    if (btnText) {
+      btnText.textContent = isPinned ? 'Ghim hội thoại' : 'Bỏ ghim hội thoại';
+    }
+  }
 }
 
 // Create message element
@@ -714,9 +902,130 @@ async function deleteMessage(messageId) {
     
   } catch (error) {
     console.error('Error deleting message:', error);
-    alert('Không thể thu hồi tin nhắn. Vui lòng thử lại.');
+    showMessage('Không thể thu hồi tin nhắn. Vui lòng thử lại.', 'error');
   }
 }
+
+// Show context menu for chat items
+function showChatItemContextMenu(event, conversationId) {
+  const menu = document.getElementById('chatItemContextMenu');
+  menu.style.display = 'block';
+  menu.style.left = event.pageX + 'px';
+  menu.style.top = event.pageY + 'px';
+  
+  // Store conversation ID for deletion
+  menu.dataset.conversationId = conversationId;
+}
+
+// Close chat item context menu
+function closeChatItemContextMenu() {
+  const menu = document.getElementById('chatItemContextMenu');
+  menu.style.display = 'none';
+}
+
+// Delete conversation
+async function deleteConversation(conversationId) {
+  if (!confirm('Bạn có chắc chắn muốn xóa hội thoại này?')) {
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/conversations/${conversationId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete conversation');
+    }
+    
+    // Remove from chat list
+    const chatItem = document.querySelector(`[data-conversation-id="${conversationId}"]`);
+    if (chatItem) {
+      chatItem.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => {
+        chatItem.remove();
+      }, 300);
+    }
+    
+    // If this was the active conversation, clear the chat view
+    if (currentConversationId === conversationId) {
+      const emptyState = document.querySelector('.empty-state');
+      const normalChat = document.getElementById('normal-chat');
+      if (emptyState) emptyState.style.display = 'flex';
+      if (normalChat) normalChat.style.display = 'none';
+      currentConversationId = null;
+      currentChatUser = null;
+    }
+    
+    showMessage('Đã xóa hội thoại thành công!', 'success');
+    
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    showMessage('Không thể xóa hội thoại. Vui lòng thử lại.', 'error');
+  }
+}
+
+// Leave group
+async function leaveGroup() {
+  if (!currentConversation?.is_group || !currentConversationId) {
+    showMessage('Bạn không ở trong nhóm nào!', 'warning');
+    return;
+  }
+  
+  if (!confirm(`Bạn có chắc chắn muốn rời khỏi nhóm "${currentConversation.name}"?`)) {
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/conversations/${currentConversationId}/leave`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to leave group');
+    }
+    
+    // Remove from chat list
+    const chatItem = document.querySelector(`[data-conversation-id="${currentConversationId}"]`);
+    if (chatItem) {
+      chatItem.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => {
+        chatItem.remove();
+      }, 300);
+    }
+    
+    // Clear chat view and close info panel
+    const emptyState = document.querySelector('.empty-state');
+    const normalChat = document.getElementById('normal-chat');
+    const infoPanel = document.getElementById('infoPanel');
+    
+    if (emptyState) emptyState.style.display = 'flex';
+    if (normalChat) {
+      normalChat.style.display = 'none';
+      normalChat.classList.remove('info-open');
+    }
+    if (infoPanel) infoPanel.style.display = 'none';
+    
+    currentConversationId = null;
+    currentChatUser = null;
+    currentConversation = null;
+    
+    showMessage('Đã rời nhóm thành công!', 'success');
+    
+  } catch (error) {
+    console.error('Error leaving group:', error);
+    showMessage('Không thể rời nhóm. Vui lòng thử lại.', 'error');
+  }
+}
+
 
 // Mark message as read
 async function markMessageAsRead(messageId) {
@@ -1070,6 +1379,7 @@ async function loadConversationsList() {
       uniqueConversations.forEach(conv => {
         const chatItem = document.createElement('div');
         chatItem.className = 'chat-item';
+        chatItem.setAttribute('data-conversation-id', conv.id);
         
         let displayName = '';
         let avatarText = 'G';
@@ -1109,6 +1419,12 @@ async function loadConversationsList() {
             const otherUser = conv.participants?.find(p => p.id !== currentUser.id) || {};
             openChat(otherUser, conv);
           }
+        });
+        
+        // Add right-click context menu
+        chatItem.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          showChatItemContextMenu(e, conv.id);
         });
         
         chatList.appendChild(chatItem);
@@ -1287,12 +1603,12 @@ async function createGroup() {
   const groupName = document.getElementById('groupNameInput').value.trim();
   
   if (!groupName) {
-    alert('Vui lòng nhập tên nhóm!');
+    showMessage('Vui lòng nhập tên nhóm!', 'warning');
     return;
   }
   
   if (selectedGroupMembers.length < 2) {
-    alert('Vui lòng chọn ít nhất 2 thành viên khác (tổng cộng tối thiểu 3 người)!');
+    showMessage('Vui lòng chọn ít nhất 2 thành viên khác (tổng cộng tối thiểu 3 người)!', 'warning');
     return;
   }
   
@@ -1330,11 +1646,11 @@ async function createGroup() {
     // Reload conversations
     await loadConversationsList();
     
-    alert(`Đã tạo nhóm "${groupName}" thành công!`);
+    showMessage(`Đã tạo nhóm "${groupName}" thành công!`, 'success');
     
   } catch (error) {
     console.error('Error creating group:', error);
-    alert('Không thể tạo nhóm: ' + error.message);
+    showMessage('Không thể tạo nhóm: ' + error.message, 'error');
   }
 }
 
@@ -1479,12 +1795,12 @@ async function searchShareRecipients(query) {
 // Share file/image
 async function shareFile() {
   if (selectedRecipients.length === 0) {
-    alert('Vui lòng chọn ít nhất 1 người nhận!');
+    showMessage('Vui lòng chọn ít nhất 1 người nhận!', 'warning');
     return;
   }
   
   if (!currentShareMessage) {
-    alert('Không tìm thấy file để chia sẻ!');
+    showMessage('Không tìm thấy file để chia sẻ!', 'error');
     return;
   }
   
@@ -1561,11 +1877,11 @@ async function shareFile() {
     // Reload conversations to refresh the list
     await loadConversationsList();
     
-    alert(`Đã chia sẻ thành công cho ${recipientCount} người!`);
+    showMessage(`Đã chia sẻ thành công cho ${recipientCount} người!`, 'success');
     
   } catch (error) {
     console.error('Error sharing file:', error);
-    alert('Không thể chia sẻ file: ' + error.message);
+    showMessage('Không thể chia sẻ file: ' + error.message, 'error');
   }
 }
 
@@ -1640,6 +1956,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
+  // Info panel toggle
+  const btnToggleInfo = document.getElementById('btnToggleInfo');
+  const btnCloseInfo = document.getElementById('btnCloseInfo');
+  const infoPanel = document.getElementById('infoPanel');
+  const normalChat = document.getElementById('normal-chat');
+  
+  if (btnToggleInfo) {
+    btnToggleInfo.addEventListener('click', () => {
+      if (infoPanel.style.display === 'none' || !infoPanel.style.display) {
+        infoPanel.style.display = 'flex';
+        if (normalChat) normalChat.classList.add('info-open');
+        loadInfoPanelData();
+      } else {
+        infoPanel.style.display = 'none';
+        if (normalChat) normalChat.classList.remove('info-open');
+      }
+    });
+  }
+  
+  if (btnCloseInfo) {
+    btnCloseInfo.addEventListener('click', () => {
+      infoPanel.style.display = 'none';
+      if (normalChat) normalChat.classList.remove('info-open');
+    });
+  }
+  
   // Create group button
   const btnCreateGroup = document.getElementById('btnCreateGroup');
   if (btnCreateGroup) {
@@ -1650,6 +1992,37 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCreateGroupSubmit = document.getElementById('btnCreateGroupSubmit');
   if (btnCreateGroupSubmit) {
     btnCreateGroupSubmit.addEventListener('click', createGroup);
+  }
+  
+  // Pin conversation button
+  const btnPinConversation = document.getElementById('btnPinConversation');
+  if (btnPinConversation) {
+    btnPinConversation.addEventListener('click', () => {
+      pinConversation();
+    });
+  }
+  
+  // Leave group button
+  const btnLeaveGroup = document.getElementById('btnLeaveGroup');
+  if (btnLeaveGroup) {
+    btnLeaveGroup.addEventListener('click', () => {
+      leaveGroup();
+    });
+  }
+  
+  // Create group from info panel
+  const btnCreateGroupFromInfo = document.getElementById('btnCreateGroupFromInfo');
+  if (btnCreateGroupFromInfo) {
+    btnCreateGroupFromInfo.addEventListener('click', () => {
+      // Close info panel
+      const infoPanel = document.getElementById('infoPanel');
+      const normalChat = document.getElementById('normal-chat');
+      if (infoPanel) infoPanel.style.display = 'none';
+      if (normalChat) normalChat.classList.remove('info-open');
+      
+      // Open create group modal
+      openCreateGroupModal();
+    });
   }
   
   // Group member search
@@ -1663,6 +2036,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 300);
     });
   }
+  
+  // Chat item context menu listeners
+  const chatItemContextMenu = document.getElementById('chatItemContextMenu');
+  if (chatItemContextMenu) {
+    const contextDeleteConversation = document.getElementById('contextDeleteConversation');
+    if (contextDeleteConversation) {
+      contextDeleteConversation.addEventListener('click', () => {
+        const conversationId = parseInt(chatItemContextMenu.dataset.conversationId);
+        deleteConversation(conversationId);
+        closeChatItemContextMenu();
+      });
+    }
+  }
+  
+  // Close chat item context menu on click outside
+  document.addEventListener('click', (e) => {
+    const chatItemMenu = document.getElementById('chatItemContextMenu');
+    if (chatItemMenu && !chatItemMenu.contains(e.target)) {
+      closeChatItemContextMenu();
+    }
+  });
   
   // Close modal on background click
   const modal = document.getElementById('createGroupModal');

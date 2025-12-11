@@ -16,6 +16,10 @@ class UserUpdate(BaseModel):
     bio: Optional[str] = None
     avatar: Optional[str] = None
 
+class ResetPassword(BaseModel):
+    email: EmailStr
+    new_password: str
+
 class UserResponse(UserBase):
     id: int
     avatar: Optional[str] = None

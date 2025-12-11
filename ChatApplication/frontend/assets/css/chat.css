@@ -189,6 +189,20 @@
 	background: var(--glass);
 }
 
+.chat-item.pinned {
+	background: rgba(0, 132, 255, 0.05);
+	border-left: 3px solid var(--accent);
+}
+
+.chat-item.pinned::before {
+	content: '📌';
+	position: absolute;
+	right: 16px;
+	top: 12px;
+	font-size: 14px;
+	opacity: 0.7;
+}
+
 .chat-info {
 	flex: 1;
 	min-width: 0;
@@ -244,6 +258,7 @@
 	align-items: center;
 	justify-content: center;
 	background: var(--panel);
+	position: relative;
 }
 
 .empty-state {
