@@ -58,6 +58,33 @@ async def send_message(
     db.commit()
     db.refresh(message)
     
+    # Broadcast message to all participants via WebSocket
+    message_dict = {
+        "id": message.id,
+        "conversation_id": message.conversation_id,
+        "sender_id": message.sender_id,
+        "sender": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "full_name": current_user.full_name,
+            "avatar": current_user.avatar
+        },
+        "content": message.content,
+        "message_type": message.message_type,
+        "file_url": message.file_url,
+        "file_name": message.file_name,
+        "file_size": message.file_size,
+        "reply_to_id": message.reply_to_id,
+        "is_read": message.is_read,
+        "created_at": message.created_at.isoformat()
+    }
+    
+    for participant in conversation.participants:
+        await manager.send_message(participant.id, {
+            "type": "new_message",
+            "message": message_dict
+        })
+    
     return message
 
 @router.get("/conversation/{conversation_id}", response_model=List[MessageWithSender])
@@ -125,33 +152,11 @@ async def delete_message(
     return None
 
 @router.websocket("/ws/{user_id}")
-async def delete_message(
-    message_id: int,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    message = db.query(models.Message).filter(models.Message.id == message_id).first()
-    
-    if not message:
-        raise HTTPException(status_code=404, detail="Message not found")
-    
-    # Only allow sender to delete their own message
-    if message.sender_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You can only delete your own messages")
-    
-    db.delete(message)
-    db.commit()
-    
-    return None
-
-@router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
     await manager.connect(user_id, websocket)
     try:
         while True:
-            data = await websocket.receive_json()
-            # Handle incoming messages
-            # Broadcast to conversation participants
-            await websocket.send_json({"status": "received"})
+            # Keep connection alive and handle any incoming data
+            data = await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(user_id)

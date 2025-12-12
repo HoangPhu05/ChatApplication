@@ -44,6 +44,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // return;
   }
 
+  // WebSocket connection
+  let ws = null;
+  
+  function connectWebSocket() {
+    if (!currentUser.id) {
+      console.warn('No user ID found - cannot connect WebSocket');
+      return;
+    }
+    
+    ws = new WebSocket(`ws://localhost:8000/api/messages/ws/${currentUser.id}`);
+    
+    ws.onopen = () => {
+      console.log('✅ WebSocket connected');
+    };
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('📨 WebSocket message:', data);
+      
+      if (data.type === 'new_message') {
+        handleNewMessage(data.message);
+      }
+    };
+    
+    ws.onerror = (error) => {
+      console.error('❌ WebSocket error:', error);
+    };
+    
+    ws.onclose = () => {
+      console.log('🔌 WebSocket disconnected - reconnecting in 3s...');
+      setTimeout(connectWebSocket, 3000);
+    };
+  }
+  
+  function handleNewMessage(message) {
+    // Update conversation list if needed
+    loadConversations();
+    
+    // If this message is for the current open conversation, display it
+    if (currentConversationId === message.conversation_id) {
+      displayMessage(message);
+      scrollToBottom();
+    }
+  }
+  
+  // Connect WebSocket on load
+  connectWebSocket();
+
   // Chat item click handler
   const chatItems = document.querySelectorAll('.chat-item');
   chatItems.forEach(item => {
@@ -358,7 +406,6 @@ if (toggleInfoBtn && infoPanel && cloudTimeline) {
 let currentChatUser = null;
 let currentConversation = null;
 let currentConversationId = null;
-let messageRefreshInterval = null;
 
 // Open chat with a user
 function openChat(user, conversation) {
@@ -386,17 +433,6 @@ function openChat(user, conversation) {
   const infoPanel = document.getElementById('infoPanel');
   if (infoPanel && infoPanel.style.display === 'flex') {
     loadInfoPanelData();
-  }
-  
-  // Start auto-refresh for new messages (every 3 seconds)
-  if (messageRefreshInterval) {
-    clearInterval(messageRefreshInterval);
-  }
-  
-  if (conversation?.id) {
-    messageRefreshInterval = setInterval(() => {
-      refreshMessages(conversation.id);
-    }, 3000);
   }
 }
 
@@ -426,17 +462,6 @@ function openGroupChat(conversation) {
   const infoPanel = document.getElementById('infoPanel');
   if (infoPanel && infoPanel.style.display === 'flex') {
     loadInfoPanelData();
-  }
-  
-  // Start auto-refresh for new messages (every 3 seconds)
-  if (messageRefreshInterval) {
-    clearInterval(messageRefreshInterval);
-  }
-  
-  if (conversation?.id) {
-    messageRefreshInterval = setInterval(() => {
-      refreshMessages(conversation.id);
-    }, 3000);
   }
 }
 
