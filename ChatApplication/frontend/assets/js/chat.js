@@ -84,8 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // If this message is for the current open conversation, display it
     if (currentConversationId === message.conversation_id) {
-      displayMessage(message);
-      scrollToBottom();
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const isSent = message.sender_id === currentUser.id;
+      addMessageToUI(message, isSent);
     }
   }
   
@@ -1102,7 +1103,7 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
     if (response.ok) {
       const newMessage = await response.json();
       console.log('Message sent successfully:', newMessage);
-      addMessageToUI(newMessage, true);
+      // Don't add to UI here - WebSocket will handle it
       document.getElementById('messageInput').value = '';
       
       // Clear reply after sending
@@ -1112,11 +1113,11 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
     } else {
       const errorText = await response.text();
       console.error('Failed to send message:', errorText);
-      alert('Failed to send message');
+      showMessage('Không thể gửi tin nhắn', 'error');
     }
   } catch (error) {
     console.error('Error sending message:', error);
-    alert('Error sending message');
+    showMessage('Lỗi khi gửi tin nhắn', 'error');
   }
 }
 
