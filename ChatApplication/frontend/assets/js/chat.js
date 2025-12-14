@@ -531,6 +531,7 @@ function loadInfoPanelData() {
   
   const btnLeaveGroup = document.getElementById('btnLeaveGroup');
   const btnCreateGroupFromInfo = document.getElementById('btnCreateGroupFromInfo');
+  const btnAddMembers = document.getElementById('btnAddMembers');
   
   // Update info based on conversation type
   if (currentConversation?.is_group) {
@@ -539,8 +540,9 @@ function loadInfoPanelData() {
     document.getElementById('infoUserName').textContent = currentConversation.name || 'Nhóm chat';
     document.getElementById('infoUserStatus').textContent = `${currentConversation.participants?.length || 0} thành viên`;
     
-    // Show leave group button, hide create group button
+    // Show leave group and add members buttons, hide create group button
     if (btnLeaveGroup) btnLeaveGroup.style.display = 'flex';
+    if (btnAddMembers) btnAddMembers.style.display = 'flex';
     if (btnCreateGroupFromInfo) btnCreateGroupFromInfo.style.display = 'none';
   } else if (currentChatUser) {
     // 1-on-1 conversation
@@ -548,8 +550,9 @@ function loadInfoPanelData() {
     document.getElementById('infoUserName').textContent = currentChatUser.display_name || currentChatUser.username;
     document.getElementById('infoUserStatus').textContent = currentChatUser.is_online ? 'Online' : 'Offline';
     
-    // Hide leave group button, show create group button
+    // Hide leave group and add members buttons, show create group button
     if (btnLeaveGroup) btnLeaveGroup.style.display = 'none';
+    if (btnAddMembers) btnAddMembers.style.display = 'none';
     if (btnCreateGroupFromInfo) btnCreateGroupFromInfo.style.display = 'flex';
   } else {
     return;
@@ -1052,6 +1055,53 @@ async function leaveGroup() {
   }
 }
 
+// Add members to group
+async function addMembersToGroup() {
+  if (!currentConversation?.is_group || !currentConversationId) {
+    showMessage('Chức năng này chỉ dành cho nhóm!', 'warning');
+    return;
+  }
+  
+  if (selectedMembersToAdd.length === 0) {
+    showMessage('Vui lòng chọn ít nhất một thành viên!', 'warning');
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const userIds = selectedMembersToAdd.map(m => m.id);
+    
+    const response = await fetch(`${API_URL}/conversations/${currentConversationId}/add-members`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(userIds)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to add members');
+    }
+    
+    const updatedConversation = await response.json();
+    
+    // Update current conversation
+    currentConversation = updatedConversation;
+    
+    // Reload conversation list and info panel
+    await loadConversations();
+    loadInfoPanelData();
+    
+    showMessage(`Đã thêm ${selectedMembersToAdd.length} thành viên vào nhóm!`, 'success');
+    closeAddMembersModal();
+  } catch (error) {
+    console.error('Error adding members:', error);
+    showMessage(error.message || 'Không thể thêm thành viên. Vui lòng thử lại.', 'error');
+  }
+}
+
 
 // Mark message as read
 async function markMessageAsRead(messageId) {
@@ -1510,6 +1560,66 @@ function closeCreateGroupModal() {
   selectedGroupMembers = [];
 }
 
+// Add Members Modal functions
+let selectedMembersToAdd = [];
+
+// Open add members modal
+function openAddMembersModal() {
+  const modal = document.getElementById('addMembersModal');
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  selectedMembersToAdd = [];
+  updateSelectedMembersToAddDisplay();
+  document.getElementById('addMemberSearch').value = '';
+  document.getElementById('addMemberSearchResults').innerHTML = '';
+}
+
+// Close add members modal
+function closeAddMembersModal() {
+  const modal = document.getElementById('addMembersModal');
+  modal.classList.remove('active');
+  modal.style.display = 'none';
+  selectedMembersToAdd = [];
+}
+
+// Update selected members to add display
+function updateSelectedMembersToAddDisplay() {
+  const container = document.getElementById('selectedMembersToAdd');
+  
+  if (selectedMembersToAdd.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">Chưa chọn thành viên nào</p>';
+  } else {
+    container.innerHTML = selectedMembersToAdd.map(member => `
+      <div class="member-tag">
+        <span>${member.display_name}</span>
+        <button class="remove-member" onclick="removeMemberToAdd(${member.id})">
+          <span class="material-icons" style="font-size: 16px;">close</span>
+        </button>
+      </div>
+    `).join('');
+  }
+  
+  // Update button state
+  const addBtn = document.getElementById('btnAddMembersSubmit');
+  if (selectedMembersToAdd.length === 0) {
+    addBtn.disabled = true;
+  } else {
+    addBtn.disabled = false;
+  }
+}
+
+// Remove member from add selection
+function removeMemberToAdd(userId) {
+  selectedMembersToAdd = selectedMembersToAdd.filter(m => m.id !== userId);
+  updateSelectedMembersToAddDisplay();
+  
+  // Update search results to reflect deselection
+  const resultItem = document.querySelector(`#addMemberSearchResults .search-result-item[data-user-id="${userId}"]`);
+  if (resultItem) {
+    resultItem.classList.remove('selected');
+  }
+}
+
 // Update selected members display
 function updateSelectedMembersDisplay() {
   const container = document.getElementById('selectedMembers');
@@ -1547,6 +1657,88 @@ function removeMember(userId) {
   const resultItem = document.querySelector(`.search-result-item[data-user-id="${userId}"]`);
   if (resultItem) {
     resultItem.classList.remove('selected');
+  }
+}
+
+// Toggle member selection for add members
+function toggleMemberToAddSelection(user) {
+  const index = selectedMembersToAdd.findIndex(m => m.id === user.id);
+  
+  if (index === -1) {
+    // Check if user is already in the group
+    const currentParticipantIds = currentConversation?.participants?.map(p => p.id) || [];
+    if (currentParticipantIds.includes(user.id)) {
+      showMessage('Người này đã có trong nhóm', 'warning');
+      return;
+    }
+    // Add member
+    selectedMembersToAdd.push(user);
+  } else {
+    // Remove member
+    selectedMembersToAdd.splice(index, 1);
+  }
+  
+  updateSelectedMembersToAddDisplay();
+}
+
+// Handle member click from add members search results
+function handleMemberToAddClick(element) {
+  const userData = element.getAttribute('data-user');
+  const user = JSON.parse(userData);
+  toggleMemberToAddSelection(user);
+  element.classList.toggle('selected');
+}
+
+// Search for members to add
+async function searchMembersToAdd(query) {
+  const resultsDiv = document.getElementById('addMemberSearchResults');
+  
+  if (!query.trim()) {
+    resultsDiv.innerHTML = '';
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/users?query=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Search failed');
+    
+    const users = await response.json();
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const currentParticipantIds = currentConversation?.participants?.map(p => p.id) || [];
+    
+    // Filter out current user and existing participants
+    const filteredUsers = users.filter(u => 
+      u.id !== currentUser.id && !currentParticipantIds.includes(u.id)
+    );
+    
+    if (filteredUsers.length === 0) {
+      resultsDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Không tìm thấy người dùng mới</p>';
+      return;
+    }
+    
+    resultsDiv.innerHTML = filteredUsers.map(user => {
+      const isSelected = selectedMembersToAdd.some(m => m.id === user.id);
+      const userJson = JSON.stringify(user);
+      return `
+        <div class="search-result-item ${isSelected ? 'selected' : ''}" data-user-id="${user.id}" data-user='${userJson.replace(/'/g, "&apos;")}' onclick="handleMemberToAddClick(this)">
+          <div class="avatar">${user.display_name.charAt(0).toUpperCase()}</div>
+          <div class="search-result-info">
+            <div class="name">${user.display_name}</div>
+            <div class="phone">${user.phone || user.email}</div>
+          </div>
+          ${isSelected ? '<span class="material-icons" style="color: var(--accent);">check_circle</span>' : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Search error:', error);
+    resultsDiv.innerHTML = '<p style="text-align: center; color: var(--error); padding: 20px;">Lỗi tìm kiếm</p>';
   }
 }
 
@@ -2033,6 +2225,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnLeaveGroup) {
     btnLeaveGroup.addEventListener('click', () => {
       leaveGroup();
+    });
+  }
+  
+  // Add members button
+  const btnAddMembers = document.getElementById('btnAddMembers');
+  if (btnAddMembers) {
+    btnAddMembers.addEventListener('click', () => {
+      openAddMembersModal();
+    });
+  }
+  
+  // Add members submit button
+  const btnAddMembersSubmit = document.getElementById('btnAddMembersSubmit');
+  if (btnAddMembersSubmit) {
+    btnAddMembersSubmit.addEventListener('click', addMembersToGroup);
+  }
+  
+  // Add member search input
+  const addMemberSearch = document.getElementById('addMemberSearch');
+  if (addMemberSearch) {
+    addMemberSearch.addEventListener('input', (e) => {
+      searchMembersToAdd(e.target.value);
     });
   }
   

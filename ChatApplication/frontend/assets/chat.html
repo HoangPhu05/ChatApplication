@@ -194,6 +194,10 @@
 					<span class="material-icons">push_pin</span>
 					<span>Ghim hội thoại</span>
 				</button>
+				<button class="info-action-btn" id="btnAddMembers" style="display: none;">
+					<span class="material-icons">person_add</span>
+					<span>Thêm thành viên</span>
+				</button>
 				<button class="info-action-btn" id="btnCreateGroupFromInfo">
 					<span class="material-icons">group_add</span>
 					<span>Tạo nhóm trò chuyện</span>
@@ -367,6 +371,41 @@
 		<div class="modal-footer">
 			<button class="btn-secondary" onclick="closeCreateGroupModal()">Hủy</button>
 			<button class="btn-primary" id="btnCreateGroupSubmit">Tạo nhóm</button>
+		</div>
+	</div>
+</div>
+
+<!-- Add Members Modal -->
+<div id="addMembersModal" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h2>Thêm thành viên</h2>
+			<button class="btn-close" onclick="closeAddMembersModal()">
+				<span class="material-icons">close</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label>Tìm kiếm thành viên</label>
+				<div class="search-box">
+					<span class="material-icons">search</span>
+					<input type="text" id="addMemberSearch" placeholder="Nhập tên hoặc số điện thoại..." />
+				</div>
+			</div>
+
+			<!-- Selected Members to Add -->
+			<div id="selectedMembersToAdd" class="selected-members">
+				<!-- Selected members will appear here -->
+			</div>
+
+			<!-- Search Results -->
+			<div id="addMemberSearchResults" class="search-results">
+				<!-- Search results will appear here -->
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn-secondary" onclick="closeAddMembersModal()">Hủy</button>
+			<button class="btn-primary" id="btnAddMembersSubmit">Thêm thành viên</button>
 		</div>
 	</div>
 </div>

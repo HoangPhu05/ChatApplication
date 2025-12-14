@@ -158,3 +158,55 @@ async def leave_group(
     
     db.commit()
     return {"message": "Successfully left the group"}
+
+@router.post("/{conversation_id}/add-members", response_model=ConversationWithParticipants)
+async def add_members_to_group(
+    conversation_id: int,
+    user_ids: List[int],
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Add members to a group conversation"""
+    conversation = db.query(models.Conversation).filter(
+        models.Conversation.id == conversation_id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    if not conversation.is_group:
+        raise HTTPException(
+            status_code=400, 
+            detail="Cannot add members to a 1-on-1 conversation"
+        )
+    
+    if current_user not in conversation.participants:
+        raise HTTPException(status_code=403, detail="You are not in this group")
+    
+    # Get users to add
+    users_to_add = db.query(models.User).filter(
+        models.User.id.in_(user_ids)
+    ).all()
+    
+    if not users_to_add:
+        raise HTTPException(status_code=404, detail="No valid users found")
+    
+    # Get current participant IDs
+    current_participant_ids = [p.id for p in conversation.participants]
+    
+    # Add only users who are not already in the group
+    added_count = 0
+    for user in users_to_add:
+        if user.id not in current_participant_ids:
+            conversation.participants.append(user)
+            added_count += 1
+    
+    if added_count == 0:
+        raise HTTPException(
+            status_code=400, 
+            detail="All selected users are already in the group"
+        )
+    
+    db.commit()
+    db.refresh(conversation)
+    return conversation
