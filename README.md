@@ -3,7 +3,7 @@
 
 # 💬 ChatApp - Real-time Chat Application
 
-Ứng dụng chat real-time với FastAPI (Python) và Vanilla JavaScript, hỗ trợ nhắn tin văn bản, file, hình ảnh/video cho cả chat 1-1 và nhóm.
+Ứng dụng chat real-time với FastAPI (Python) và Vanilla JavaScript, hỗ trợ nhắn tin văn bản, file, hình ảnh cho cả chat 1-1 và nhóm.
 
 ---
 
