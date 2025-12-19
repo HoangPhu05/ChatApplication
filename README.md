@@ -18,7 +18,7 @@
 ### 💬 Nhắn tin
 - **Real-time messaging** với WebSocket
 - Chat **1-1** và **nhóm** (group chat)
-- Gửi: văn bản, hình ảnh, video, file đính kèm
+- Gửi: văn bản, hình ảnh, file đính kèm
 - **Reply tin nhắn** (trích dẫn)
 - Đánh dấu đã đọc
 - Hiển thị timestamp
