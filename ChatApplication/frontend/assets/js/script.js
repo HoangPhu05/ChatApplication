@@ -108,10 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
       loginBtn.disabled = true;
       loginBtn.textContent = 'Đang đăng nhập...';
 
+
       try {
         console.log('Sending request to:', `${API_URL}/auth/login`);
         
-        const response = await fetch(`${API_URL}/auth/login`, {
+        const response = await fetch(`${API_URL}/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -191,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
           requestBody.phone = phone;
         }
         
-        const response = await fetch(`${API_URL}/auth/register`, {
+        const response = await fetch(`${API_URL}/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
