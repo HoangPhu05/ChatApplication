@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.core.deps import get_db
+from app.core.deps import get_db, get_current_user
 from app.core.security import verify_password, create_access_token, get_password_hash
 from app.database import models
 from app.schemas.user import UserCreate, UserResponse, Token, UserLogin
-from datetime import timedelta
+from datetime import timedelta, datetime
 from app.core.config import settings
 
 router = APIRouter()
@@ -53,9 +53,8 @@ async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
             detail="Incorrect username/email or password"
         )
     
-    # Update user online status
-    user.is_online = True
-    db.commit()
+    # Note: is_online will be set to True when WebSocket connects
+    # Don't set it here to avoid false positives
     
     # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -77,7 +76,12 @@ async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     }
 
 @router.post("/logout")
-async def logout(current_user: models.User = Depends(get_db)):
-    # Set user offline
-    # This would be handled with WebSocket disconnect in real implementation
+async def logout(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Logout endpoint - set user offline"""
+    current_user.is_online = False
+    current_user.last_seen = datetime.utcnow()
+    db.commit()
     return {"message": "Logged out successfully"}

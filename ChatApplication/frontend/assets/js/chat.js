@@ -65,6 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (data.type === 'new_message') {
         handleNewMessage(data.message);
+      } else if (data.type === 'user_status') {
+        handleUserStatusChange(data.user_id, data.is_online);
       }
     };
     
@@ -87,6 +89,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const isSent = message.sender_id === currentUser.id;
       addMessageToUI(message, isSent);
+    }
+  }
+  
+  function handleUserStatusChange(userId, isOnline) {
+    console.log(`👤 User ${userId} is now ${isOnline ? 'online' : 'offline'}`);
+    
+    // Update avatar status in conversation list
+    const chatItems = document.querySelectorAll('.chat-item');
+    chatItems.forEach(item => {
+      const otherUserId = parseInt(item.dataset.otherUserId);
+      if (otherUserId === userId) {
+        const avatar = item.querySelector('.avatar');
+        if (avatar) {
+          if (isOnline) {
+            avatar.classList.add('online');
+          } else {
+            avatar.classList.remove('online');
+          }
+        }
+      }
+    });
+    
+    // Update status in chat header if this is the current chat
+    if (currentChatUser && currentChatUser.id === userId) {
+      currentChatUser.is_online = isOnline;
+      const statusEl = document.getElementById('infoUserStatus');
+      if (statusEl) {
+        statusEl.textContent = isOnline ? 'Online' : 'Offline';
+      }
     }
   }
   
@@ -1153,7 +1184,12 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
     if (response.ok) {
       const newMessage = await response.json();
       console.log('Message sent successfully:', newMessage);
-      // Don't add to UI here - WebSocket will handle it
+      
+      // Add message to UI immediately
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const isSent = newMessage.sender_id === currentUser.id;
+      addMessageToUI(newMessage, isSent);
+      
       document.getElementById('messageInput').value = '';
       
       // Clear reply after sending
@@ -1460,6 +1496,8 @@ async function loadConversationsList() {
         let displayName = '';
         let avatarText = 'G';
         let statusText = 'Online';
+        let isOnline = false;
+        let otherUserId = null;
         
         if (conv.is_group) {
           // Group conversation
@@ -1469,13 +1507,18 @@ async function loadConversationsList() {
         } else {
           // 1-on-1 conversation
           const otherUser = conv.participants?.find(p => p.id !== currentUser.id) || {};
+          otherUserId = otherUser.id;
           displayName = otherUser.display_name || otherUser.username || 'User';
           avatarText = displayName.charAt(0).toUpperCase();
-          statusText = 'Online';
+          isOnline = otherUser.is_online || false;
+          statusText = isOnline ? 'Online' : 'Offline';
+          
+          // Store other user ID for status updates
+          chatItem.setAttribute('data-other-user-id', otherUserId);
         }
         
         chatItem.innerHTML = `
-          <div class="avatar ${conv.is_group ? '' : 'online'}">${avatarText}</div>
+          <div class="avatar ${isOnline ? 'online' : ''}">${avatarText}</div>
           <div class="chat-info">
             <div class="chat-header">
               <h4>${displayName}</h4>

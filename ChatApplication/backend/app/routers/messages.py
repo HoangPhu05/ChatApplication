@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session, joinedload
 from typing import List
+from datetime import datetime
 from app.core.deps import get_db, get_current_user
 from app.database import models
 from app.schemas.message import MessageCreate, MessageResponse, MessageWithSender
@@ -23,6 +24,21 @@ class ConnectionManager:
     async def send_message(self, user_id: int, message: dict):
         if user_id in self.active_connections:
             await self.active_connections[user_id].send_json(message)
+    
+    async def broadcast_user_status(self, user_id: int, is_online: bool):
+        """Broadcast user online/offline status to all connected users"""
+        status_message = {
+            "type": "user_status",
+            "user_id": user_id,
+            "is_online": is_online
+        }
+        for connection_user_id in list(self.active_connections.keys()):
+            if connection_user_id != user_id:
+                await self.send_message(connection_user_id, status_message)
+    
+    def get_online_users(self) -> list[int]:
+        """Get list of currently online user IDs"""
+        return list(self.active_connections.keys())
 
 manager = ConnectionManager()
 
@@ -66,7 +82,7 @@ async def send_message(
         "sender": {
             "id": current_user.id,
             "username": current_user.username,
-            "full_name": current_user.full_name,
+            "display_name": current_user.display_name,
             "avatar": current_user.avatar
         },
         "content": message.content,
@@ -152,11 +168,31 @@ async def delete_message(
     return None
 
 @router.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: int):
+async def websocket_endpoint(websocket: WebSocket, user_id: int, db: Session = Depends(get_db)):
+    # Update user status to online
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user:
+        user.is_online = True
+        user.last_seen = datetime.utcnow()
+        db.commit()
+    
     await manager.connect(user_id, websocket)
+    
+    # Broadcast to all users that this user is now online
+    await manager.broadcast_user_status(user_id, True)
+    
     try:
         while True:
             # Keep connection alive and handle any incoming data
             data = await websocket.receive_text()
     except WebSocketDisconnect:
+        # Update user status to offline
+        if user:
+            user.is_online = False
+            user.last_seen = datetime.utcnow()
+            db.commit()
+        
         manager.disconnect(user_id)
+        
+        # Broadcast to all users that this user is now offline
+        await manager.broadcast_user_status(user_id, False)
