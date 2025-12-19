@@ -1,5 +1,5 @@
 // API Configuration
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'https://chatapplication-ppv9.onrender.com';
 
 // Helper function to show messages
 function showMessage(message, type = 'info') {
