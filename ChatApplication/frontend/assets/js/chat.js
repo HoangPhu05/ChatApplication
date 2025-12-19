@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
-    ws = new WebSocket(`ws://localhost:8000/api/messages/ws/${currentUser.id}`);
+    ws = new WebSocket(`wss://chatapplication-ppv9.onrender.com/api/messages/ws/${currentUser.id}`);
     
     ws.onopen = () => {
       console.log('✅ WebSocket connected');
