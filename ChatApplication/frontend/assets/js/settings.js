@@ -59,7 +59,7 @@ async function loadUserDataFromAPI() {
     const token = localStorage.getItem('token');
     console.log('Loading user data with token:', token ? 'Token exists' : 'No token');
     
-    const response = await fetch(`${API_URL}/users/me`, {
+    const response = await fetch(`${API_URL}/api/users/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

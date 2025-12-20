@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
-    ws = new WebSocket(`wss://chatapplication-ppv9.onrender.com/api/messages/ws/${currentUser.id}`);
+    ws = new WebSocket(`ws://localhost:8000/api/messages/ws/${currentUser.id}`);
     
     ws.onopen = () => {
       console.log('✅ WebSocket connected');
@@ -275,9 +275,9 @@ function showAddFriendPopup() {
     try {
       const token = localStorage.getItem('token');
       console.log('Searching for:', query);
-      console.log('API URL:', `${API_URL}/users?query=${encodeURIComponent(query)}`);
+      console.log('API URL:', `${API_URL}/api/users?query=${encodeURIComponent(query)}`);
       
-      const response = await fetch(`${API_URL}/users?query=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${API_URL}/api/users?query=${encodeURIComponent(query)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -343,7 +343,7 @@ async function startChatWithUser(user) {
     const token = localStorage.getItem('token');
     
     // Create or get conversation
-    const response = await fetch(`${API_URL}/conversations`, {
+    const response = await fetch(`${API_URL}/api/conversations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -509,7 +509,7 @@ async function loadMessages(conversationId) {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/messages/conversation/${conversationId}`, {
+    const response = await fetch(`${API_URL}/api/messages/conversation/${conversationId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -991,7 +991,7 @@ async function deleteConversation(conversationId) {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/conversations/${conversationId}`, {
+    const response = await fetch(`${API_URL}/api/conversations/${conversationId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -1042,7 +1042,7 @@ async function leaveGroup() {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/conversations/${currentConversationId}/leave`, {
+    const response = await fetch(`${API_URL}/api/conversations/${currentConversationId}/leave`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -1102,7 +1102,7 @@ async function addMembersToGroup() {
     const token = localStorage.getItem('token');
     const userIds = selectedMembersToAdd.map(m => m.id);
     
-    const response = await fetch(`${API_URL}/conversations/${currentConversationId}/add-members`, {
+    const response = await fetch(`${API_URL}/api/conversations/${currentConversationId}/add-members`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1172,7 +1172,7 @@ async function sendMessage(content, type = 'text', fileUrl = null) {
     };
     console.log('Sending message data:', messageData);
     
-    const response = await fetch(`${API_URL}/messages`, {
+    const response = await fetch(`${API_URL}/api/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1225,7 +1225,7 @@ async function createConversation() {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/conversations`, {
+    const response = await fetch(`${API_URL}/api/conversations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1382,7 +1382,7 @@ async function uploadAndSendFile(file, type) {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/cloud/upload`, {
+    const response = await fetch(`${API_URL}/api/cloud/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -1417,7 +1417,7 @@ async function refreshMessages(conversationId) {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/messages/conversation/${conversationId}`, {
+    const response = await fetch(`${API_URL}/api/messages/conversation/${conversationId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -1455,7 +1455,7 @@ async function refreshMessages(conversationId) {
 async function loadConversationsList() {
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/conversations`, {
+    const response = await fetch(`${API_URL}/api/conversations`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -1743,7 +1743,7 @@ async function searchMembersToAdd(query) {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users?query=${encodeURIComponent(query)}`, {
+    const response = await fetch(`${API_URL}/api/users?query=${encodeURIComponent(query)}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -1819,7 +1819,7 @@ async function searchGroupMembers(query) {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users?query=${encodeURIComponent(query)}`, {
+    const response = await fetch(`${API_URL}/api/users?query=${encodeURIComponent(query)}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -1880,7 +1880,7 @@ async function createGroup() {
     // Include current user + selected members
     const participantIds = [currentUser.id, ...selectedGroupMembers.map(m => m.id)];
     
-    const response = await fetch(`${API_URL}/conversations/group`, {
+    const response = await fetch(`${API_URL}/api/conversations/group`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -2013,7 +2013,7 @@ async function searchShareRecipients(query) {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users?query=${encodeURIComponent(query)}`, {
+    const response = await fetch(`${API_URL}/api/users?query=${encodeURIComponent(query)}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -2072,7 +2072,7 @@ async function shareFile() {
     // Share to each recipient
     for (const recipient of selectedRecipients) {
       // First, get all existing conversations to find if one already exists
-      const allConvResponse = await fetch(`${API_URL}/conversations`, {
+      const allConvResponse = await fetch(`${API_URL}/api/conversations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -2090,7 +2090,7 @@ async function shareFile() {
       
       // If no existing conversation, create new one
       if (!conversation) {
-        const convResponse = await fetch(`${API_URL}/conversations`, {
+        const convResponse = await fetch(`${API_URL}/api/conversations`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -2108,7 +2108,7 @@ async function shareFile() {
       }
       
       // Send the shared file/image to the existing or new conversation
-      const msgResponse = await fetch(`${API_URL}/messages`, {
+      const msgResponse = await fetch(`${API_URL}/api/messages`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

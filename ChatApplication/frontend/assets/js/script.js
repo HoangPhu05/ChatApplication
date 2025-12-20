@@ -1,5 +1,5 @@
 // API Configuration
-const API_URL = 'https://chatapplication-ppv9.onrender.com';
+const API_URL = 'http://localhost:8000';
 
 // Helper function to show messages
 function showMessage(message, type = 'info') {
@@ -110,9 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       try {
-        console.log('Sending request to:', `${API_URL}/auth/login`);
+        console.log('Sending request to:', `${API_URL}/api/auth/login`);
         
-        const response = await fetch(`${API_URL}/login`, {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
           requestBody.phone = phone;
         }
         
-        const response = await fetch(`${API_URL}/register`, {
+        const response = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
